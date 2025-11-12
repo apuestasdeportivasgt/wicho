@@ -90,7 +90,7 @@ const leagueCodeToName = {
 };
 const leagueRegions = {
     "esp.1": "Europa",
-    "esp.2": "Europa",
+    //"esp.2": "Europa",
     "eng.1": "Europa",
     "eng.2": "Europa",
     "ita.1": "Europa",
@@ -98,25 +98,25 @@ const leagueRegions = {
     "fra.1": "Europa",
     "ned.1": "Europa",
     "ned.2": "Europa",
-    "por.1": "Europa",
+    //"por.1": "Europa",
     "tur.1": "Europa",
-    "ger.2": "Europa",
-    "arg.1": "Sudamérica",
+    //"ger.2": "Europa",
+    //"arg.1": "Sudamérica",
     "bra.1": "Sudamérica",
     "mex.1": "Norteamérica",
-    "mex.2": "Norteamérica",
+    //"mex.2": "Norteamérica",
     "usa.1": "Norteamérica",
     "gua.1": "Centroamérica",
-    "crc.1": "Centroamérica",
-    "hon.1": "Centroamérica",
-    "slv.1": "Centroamérica",
+    //"crc.1": "Centroamérica",
+    //"hon.1": "Centroamérica",
+    //"slv.1": "Centroamérica",
     "ksa.1": "Asia",
     "chn.1": "Asia",
-    "conmebol.sudamericana": "Copas Internacionales",
-    "conmebol.libertadores": "Copas Internacionales",
-    "fifa.worldq.conmebol": "Eliminatorias Mundiales",
-    "fifa.worldq.concacaf": "Eliminatorias Mundiales",
-    "fifa.worldq.uefa": "Eliminatorias Mundiales"
+    //"conmebol.sudamericana": "Copas Internacionales",
+    //"conmebol.libertadores": "Copas Internacionales",
+    //"fifa.worldq.conmebol": "Eliminatorias Mundiales",
+    //"fifa.worldq.concacaf": "Eliminatorias Mundiales",
+    //"fifa.worldq.uefa": "Eliminatorias Mundiales"
 };
 // NORMALIZACIÓN DE DATOS
 function normalizeTeam(raw) {
@@ -1021,4 +1021,5 @@ document.addEventListener('keydown', e => {
     }
 });
 document.addEventListener('DOMContentLoaded', init);
+
 
