@@ -24,9 +24,9 @@
 <body>
   <div class="player-wrap">
     <div class="card">
-      <h1 class="title">Reproductor - TV en VIVO</h1>
+      <h1 class="title">Reproductor HLS — TV EN VIVO</h1>
       <div class="video-container">
-        <video id="video" controls playsinline preload="metadata"></video>
+        <video id="video" controls playsinline preload="metadata" autoplay muted></video>
       </div>
 
       <div class="controls">
@@ -100,7 +100,14 @@
       }
     }
 
-    // Inicialización
+    // Intento de autoplay seguro
+video.muted = true;
+video.autoplay = true;
+video.addEventListener('canplay', ()=>{
+  video.play().catch(()=>{});
+});
+
+// Inicialización
     if (Hls.isSupported()){
       setupHls();
     } else if (video.canPlayType('application/vnd.apple.mpegurl')){
@@ -128,4 +135,3 @@
   </script>
 </body>
 </html>
-
