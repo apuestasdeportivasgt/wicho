@@ -2,61 +2,96 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>HLS Player</title>
+<title>Multi HLS Player</title>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
     body {
         background: #111;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        color: white;
+        color: #fff;
         font-family: Arial;
+        margin: 0;
+        padding: 20px;
+    }
+    h2 {
+        margin-top: 40px;
+        font-size: 20px;
+        border-bottom: 1px solid #444;
+        padding-bottom: 5px;
+    }
+    .player {
+        margin-bottom: 40px;
     }
     video {
-        width: 80%;
-        max-width: 900px;
+        width: 100%;
+        max-width: 700px;
         background: black;
-        border: 2px solid #444;
         border-radius: 8px;
+        border: 2px solid #333;
+        display: block;
+        margin-top: 10px;
     }
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 
 <body>
 
-    <video id="video" controls autoplay muted></video>
+<h1>Multi HLS Player</h1>
 
-    <script>
-        const video = document.getElementById('video');
-        const streamUrl = "https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8";
+<div id="players"></div>
 
-        console.log("Cargando:", streamUrl);
+<script>
+const streams = [
+    "https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8",
+    "https://d9csq71s6v3mg.cloudfront.net/index.m3u8",
+    "https://d2r6jvvp61kqtl.cloudfront.net/index.m3u8",
+    "https://d3cagxma76aq5s.cloudfront.net/index.m3u8",
+    "https://d2d5r9jek1fe6z.cloudfront.net/index.m3u8",
+    "https://alba-gt-chapinradio-galaxia.stream.mediatiquestream.com/index.m3u8",
+    "https://d3u24c0wx3s042.cloudfront.net/index.m3u8",
+    "https://die1qchpy08nt.cloudfront.net/index.m3u8",
+    "https://d2no0f009otz1i.cloudfront.net/index.m3u8",
+    "https://d1vs5psx2xsb75.cloudfront.net/index.m3u8",
+    "https://dmk7nbp6jo0j.cloudfront.net/index.m3u8",
+    "https://dpgj35ppjrtjz.cloudfront.net/index.m3u8",
+    "https://d63yyf5yop3gl.cloudfront.net/index.m3u8"
+];
 
-        if (Hls.isSupported()) {
-            const hls = new Hls({
-                debug: false
-            });
+const container = document.getElementById("players");
 
-            hls.loadSource(streamUrl);
-            hls.attachMedia(video);
+streams.forEach((url, index) => {
+    const block = document.createElement("div");
+    block.className = "player";
 
-            hls.on(Hls.Events.ERROR, function (event, data) {
-                console.error("HLS ERROR:", data);
-            });
+    block.innerHTML = `
+        <h2>Stream #${index + 1}</h2>
+        <video id="video${index}" controls muted></video>
+        <p>${url}</p>
+    `;
 
-        } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-            video.src = streamUrl;
-            video.addEventListener("loadedmetadata", () => video.play());
-        } else {
-            alert("Tu navegador no soporta HLS.");
-        }
-    </script>
+    container.appendChild(block);
+
+    const video = document.getElementById("video" + index);
+
+    if (Hls.isSupported()) {
+        let hls = new Hls({
+            debug: false
+        });
+
+        hls.loadSource(url);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.ERROR, function (event, data) {
+            console.error("Error en stream", index + 1, data);
+        });
+
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        // Safari / iPhone
+        video.src = url;
+    }
+});
+</script>
 
 </body>
 </html>
