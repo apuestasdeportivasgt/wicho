@@ -1,137 +1,39 @@
-<!doctype html>
-<html lang="es">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Reproductor HLS</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background:#f5f7fa;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      min-height:100vh;
-      margin:0;
-      padding:20px;
-    }
-    .player-wrap {
-      width:100%;
-      max-width:900px;
-      box-shadow:0 6px 24px rgba(20,30,40,0.12);
-      background:white;
-      border-radius:10px;
-      padding:12px;
-    }
-    video {
-      width:100%;
-      border-radius:6px;
-      background:black;
-      display:block;
-    }
-    .meta {
-      margin-top:8px;
-      font-size:14px;
-      color:#334155;
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-    }
-    .note { color:#64748b; font-size:13px; }
-    .error { color:#b91c1c; }
-  </style>
+  <meta charset="utf-8">
+  <title>HLS Player</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
-  <div class="player-wrap" role="region" aria-label="Reproductor de vídeo HLS">
-    <!-- Video tag: algunos navegadores (Safari/iOS) reproducen .m3u8 de forma nativa -->
-    <video id="video" controls playsinline poster="" preload="metadata">
-      Tu navegador no soporta el elemento de vídeo.
-    </video>
 
-    <div class="meta">
-      <div class="note">Fuente HLS: <code>https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8</code></div>
-      <div id="status" class="note"></div>
-    </div>
+<video id="video" controls autoplay muted playsinline style="width:100%; max-width:900px; background:black;"></video>
 
-    <div id="errorMsg" class="note error" role="status" aria-live="polite"></div>
-  </div>
+<script>
+  const url = "https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8";
+  const video = document.getElementById("video");
 
-  <!-- hls.js desde CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script>
-    (function() {
-      const video = document.getElementById('video');
-      const status = document.getElementById('status');
-      const errorMsg = document.getElementById('errorMsg');
-      const hlsUrl = 'https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8';
-
-      function setStatus(text) {
-        status.textContent = text;
+  // Safari / iOS — soportan HLS nativo
+  if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = url;
+      video.play();
+  } else {
+      // Otros navegadores — usar hls.js
+      if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(url);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+              video.play();
+          });
+          hls.on(Hls.Events.ERROR, function (event, data) {
+              console.log("HLS ERROR:", data);
+          });
+      } else {
+          alert("Este navegador no soporta HLS.");
       }
-      function setError(text) {
-        errorMsg.textContent = text;
-      }
+  }
+</script>
 
-      // Si el reproductor nativo soporta HLS (Safari, iOS)
-      if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        setStatus('Usando reproducción nativa (HLS soportado)');
-        video.src = hlsUrl;
-        video.addEventListener('error', () => setError('Error de reproducción nativa del stream.'));
-        return;
-      }
-
-      // Si hls.js está disponible, úsalo para manejar HLS en navegadores que no lo soportan nativamente
-      if (window.Hls && Hls.isSupported()) {
-        const hls = new Hls({
-          // Opciones útiles:
-          maxBufferLength: 30,      // segundos de buffer
-          maxMaxBufferLength: 60
-        });
-
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-          setStatus('hls.js: attached — cargando stream...');
-          hls.loadSource(hlsUrl);
-        });
-
-        hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-          setStatus(`hls.js: manifest parseado — ${data.levels ? data.levels.length : '?'} calidades`);
-          // no autoplay automático por accesibilidad, el usuario debe iniciar (puedes descomentar si quieres autoplay)
-          // video.play();
-        });
-
-        hls.on(Hls.Events.ERROR, function(event, data) {
-          console.error('hls.js error', data);
-          if (data.fatal) {
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                setError('Error de red al cargar el stream.');
-                hls.startLoad(); // intenta reintentar
-                break;
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                setError('Error de medios — intentando recuperación.');
-                hls.recoverMediaError();
-                break;
-              default:
-                setError('Error fatal en hls.js — no se puede reproducir el stream.');
-                hls.destroy();
-                break;
-            }
-          } else {
-            // no fatal: mostrar advertencia
-            setStatus('Advertencia en hls.js: ' + data.details);
-          }
-        });
-
-        // Limpieza en unload
-        window.addEventListener('beforeunload', () => { hls.destroy(); });
-        return;
-      }
-
-      // Si llegamos aquí: ni soporte nativo ni hls.js disponible
-      setError('Tu navegador no soporta HLS y hls.js no está disponible. Prueba con Safari o instala un navegador actualizado.');
-    })();
-  </script>
 </body>
 </html>
