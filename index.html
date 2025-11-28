@@ -1,35 +1,62 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Reproductor Mux Video</title>
-    
-    <script src="https://cdn.mux.com/mux-player.js"></script>
-    
-    <style>
-        /* Ajuste el tamaño del reproductor */
-        #mux-player-container {
-            width: 80%;
-            max-width: 900px;
-            margin: 50px auto;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>HLS Player</title>
+
+<style>
+    body {
+        background: #111;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: white;
+        font-family: Arial;
+    }
+    video {
+        width: 80%;
+        max-width: 900px;
+        background: black;
+        border: 2px solid #444;
+        border-radius: 8px;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
+
 <body>
 
-    <div id="mux-player-container">
-        <mux-video 
-            src="https://d2qsan2ut81n2k.cloudfront.net/live/c2cce928-c69c-45d5-bd0a-5a5eba167a0d/ts:abr.m3u8" 
-            env-key="" 
-            autoplay 
-            controls 
-            crossorigin 
-            preload="none" 
-            id="live-stream-1"
-            muted
-        >
-        </mux-video>
-    </div>
+    <video id="video" controls autoplay muted></video>
+
+    <script>
+        const video = document.getElementById('video');
+        const streamUrl = "https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8";
+
+        console.log("Cargando:", streamUrl);
+
+        if (Hls.isSupported()) {
+            const hls = new Hls({
+                debug: false
+            });
+
+            hls.loadSource(streamUrl);
+            hls.attachMedia(video);
+
+            hls.on(Hls.Events.ERROR, function (event, data) {
+                console.error("HLS ERROR:", data);
+            });
+
+        } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+            video.src = streamUrl;
+            video.addEventListener("loadedmetadata", () => video.play());
+        } else {
+            alert("Tu navegador no soporta HLS.");
+        }
+    </script>
 
 </body>
 </html>
