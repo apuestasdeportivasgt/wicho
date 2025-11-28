@@ -1,5 +1,24 @@
-// La URL original:
-// var videoUrl = 'https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8';
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reproductor Video.js</title>
+    <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
+</head>
+<body>
 
-// La URL MODIFICADA con el proxy (pruébalo):
-var videoUrl = 'https://cors-anywhere.herokuapp.com/https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8';
+    <video
+        id="my-video"
+        class="video-js vjs-default-skin"
+        controls
+        preload="auto"
+        width="640"
+        height="360"
+        data-setup='{}'
+    >
+        <source src="https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8" type="application/x-mpegURL">
+    </video>
+
+    <script src="https://vjs.zencdn.net/8.6.1/video.js"></script>
+
+</body>
+</html>
