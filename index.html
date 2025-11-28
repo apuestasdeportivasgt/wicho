@@ -2,136 +2,136 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reproductor HLS — Disney20</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reproductor HLS</title>
   <style>
-    :root{--bg:#0b0b0b;--panel:#0f1720;--muted:#9aa4b2}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
-    body{display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#071021 0%,#071422 100%);color:#fff}
-    .player-wrap{width:min(1100px,96vw);max-width:1100px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));padding:18px;border-radius:14px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-    .title{font-size:18px;margin:0 0 10px 0}
-    .video-container{position:relative;padding-top:56.25%;background:#000;border-radius:8px;overflow:hidden}
-    video{position:absolute;top:0;left:0;width:100%;height:100%;display:block;background:#000}
-    .controls{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:10px}
-    .left-controls{display:flex;gap:8px;align-items:center}
-    button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:inherit;cursor:pointer}
-    input[type=range]{width:160px}
-    .meta{font-size:13px;color:var(--muted)}
-    .notice{margin-top:8px;font-size:13px;color:var(--muted)}
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:#f5f7fa;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      margin:0;
+      padding:20px;
+    }
+    .player-wrap {
+      width:100%;
+      max-width:900px;
+      box-shadow:0 6px 24px rgba(20,30,40,0.12);
+      background:white;
+      border-radius:10px;
+      padding:12px;
+    }
+    video {
+      width:100%;
+      border-radius:6px;
+      background:black;
+      display:block;
+    }
+    .meta {
+      margin-top:8px;
+      font-size:14px;
+      color:#334155;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+    }
+    .note { color:#64748b; font-size:13px; }
+    .error { color:#b91c1c; }
   </style>
 </head>
 <body>
-  <div class="player-wrap">
-    <div class="card">
-      <h1 class="title">Reproductor HLS — TV EN VIVO</h1>
-      <div class="video-container">
-        <video id="video" controls playsinline preload="metadata" autoplay muted></video>
-      </div>
+  <div class="player-wrap" role="region" aria-label="Reproductor de vídeo HLS">
+    <!-- Video tag: algunos navegadores (Safari/iOS) reproducen .m3u8 de forma nativa -->
+    <video id="video" controls playsinline poster="" preload="metadata">
+      Tu navegador no soporta el elemento de vídeo.
+    </video>
 
-      <div class="controls">
-        <div class="left-controls">
-          <button id="play">Play/Pause</button>
-          <button id="mute">Mute</button>
-          <label class="meta">Velocidad:</label>
-          <select id="speed">
-            <option value="0.5">0.5×</option>
-            <option value="0.75">0.75×</option>
-            <option value="1" selected>1×</option>
-            <option value="1.25">1.25×</option>
-            <option value="1.5">1.5×</option>
-            <option value="2">2×</option>
-          </select>
-        </div>
-        <div class="right-controls">
-          <label class="meta">Calidad:</label>
-          <select id="quality"><option>Auto</option></select>
-        </div>
-      </div>
-
-      <div class="notice">Si tu navegador no reproduce HLS nativamente (Chrome/Firefox), el reproductor usa hls.js para forzar la reproducción. En Safari la reproducción HLS es nativa.</div>
+    <div class="meta">
+      <div class="note">Fuente HLS: <code>https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8</code></div>
+      <div id="status" class="note"></div>
     </div>
+
+    <div id="errorMsg" class="note error" role="status" aria-live="polite"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.2/dist/hls.min.js"></script>
+  <!-- hls.js desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script>
-    // URL proporcionada
-    const streamUrl = 'https://bgfuzq.fubohd.com/disney20/mono.m3u8?token=851abb452279d1c1163831da7d8e1badd983d7c8-6d-1764033282-1764015282';
+    (function() {
+      const video = document.getElementById('video');
+      const status = document.getElementById('status');
+      const errorMsg = document.getElementById('errorMsg');
+      const hlsUrl = 'https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8';
 
-    const video = document.getElementById('video');
-    const playBtn = document.getElementById('play');
-    const muteBtn = document.getElementById('mute');
-    const speedSel = document.getElementById('speed');
-    const qualitySel = document.getElementById('quality');
+      function setStatus(text) {
+        status.textContent = text;
+      }
+      function setError(text) {
+        errorMsg.textContent = text;
+      }
 
-    function setupNative(){
-      video.src = streamUrl;
-      video.addEventListener('loadedmetadata', ()=>{
-        console.log('Metadata loaded (native)');
-      });
-    }
+      // Si el reproductor nativo soporta HLS (Safari, iOS)
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        setStatus('Usando reproducción nativa (HLS soportado)');
+        video.src = hlsUrl;
+        video.addEventListener('error', () => setError('Error de reproducción nativa del stream.'));
+        return;
+      }
 
-    function setupHls(){
-      if(Hls.isSupported()){
-        const hls = new Hls({capLevelToPlayerSize:true});
-        hls.loadSource(streamUrl);
-        hls.attachMedia(video);
-
-        hls.on(Hls.Events.MANIFEST_PARSED, function(evt, data) {
-          // rellenar opciones de calidad
-          const levels = hls.levels || [];
-          qualitySel.innerHTML = '<option value="-1">Auto</option>' + levels.map((l,i)=>`<option value="${i}">${l.height||'auto'}p ${l.bitrate?Math.round(l.bitrate/1000)+'kbps':''}</option>`).join('');
+      // Si hls.js está disponible, úsalo para manejar HLS en navegadores que no lo soportan nativamente
+      if (window.Hls && Hls.isSupported()) {
+        const hls = new Hls({
+          // Opciones útiles:
+          maxBufferLength: 30,      // segundos de buffer
+          maxMaxBufferLength: 60
         });
 
-        qualitySel.addEventListener('change', ()=>{
-          const val = parseInt(qualitySel.value,10);
-          hls.currentLevel = isNaN(val) ? -1 : val;
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+          setStatus('hls.js: attached — cargando stream...');
+          hls.loadSource(hlsUrl);
+        });
+
+        hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+          setStatus(`hls.js: manifest parseado — ${data.levels ? data.levels.length : '?'} calidades`);
+          // no autoplay automático por accesibilidad, el usuario debe iniciar (puedes descomentar si quieres autoplay)
+          // video.play();
         });
 
         hls.on(Hls.Events.ERROR, function(event, data) {
-          console.error('HLS error', data);
+          console.error('hls.js error', data);
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                setError('Error de red al cargar el stream.');
+                hls.startLoad(); // intenta reintentar
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                setError('Error de medios — intentando recuperación.');
+                hls.recoverMediaError();
+                break;
+              default:
+                setError('Error fatal en hls.js — no se puede reproducir el stream.');
+                hls.destroy();
+                break;
+            }
+          } else {
+            // no fatal: mostrar advertencia
+            setStatus('Advertencia en hls.js: ' + data.details);
+          }
         });
 
-        return hls;
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')){
-        setupNative();
-      } else {
-        console.error('HLS no soportado');
+        // Limpieza en unload
+        window.addEventListener('beforeunload', () => { hls.destroy(); });
+        return;
       }
-    }
 
-    // Intento de autoplay seguro
-video.muted = true;
-video.autoplay = true;
-video.addEventListener('canplay', ()=>{
-  video.play().catch(()=>{});
-});
-
-// Inicialización
-    if (Hls.isSupported()){
-      setupHls();
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')){
-      setupNative();
-    } else {
-      // show message to user
-      const notice = document.createElement('div');
-      notice.textContent = 'Tu navegador no soporta HLS y hls.js no está disponible.';
-      document.querySelector('.card').appendChild(notice);
-    }
-
-    // Controles
-    playBtn.addEventListener('click', ()=>{
-      if(video.paused) video.play(); else video.pause();
-    });
-
-    muteBtn.addEventListener('click', ()=>{
-      video.muted = !video.muted;
-      muteBtn.textContent = video.muted ? 'Unmute' : 'Mute';
-    });
-
-    speedSel.addEventListener('change', ()=>{
-      video.playbackRate = parseFloat(speedSel.value);
-    });
+      // Si llegamos aquí: ni soporte nativo ni hls.js disponible
+      setError('Tu navegador no soporta HLS y hls.js no está disponible. Prueba con Safari o instala un navegador actualizado.');
+    })();
   </script>
 </body>
 </html>
