@@ -1,24 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Reproductor Video.js</title>
-    <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <title>Reproductor HLS con Proxy CORS</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding-top: 20px;
+        }
+        #video-container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        #video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+    </style>
 </head>
 <body>
 
-    <video
-        id="my-video"
-        class="video-js vjs-default-skin"
-        controls
-        preload="auto"
-        width="640"
-        height="360"
-        data-setup='{}'
-    >
-        <source src="https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8" type="application/x-mpegURL">
-    </video>
+    <div id="video-container">
+        <h1>Stream M3U8 (CloudFront)</h1>
+        <video id="video" controls autoplay muted></video>
+    </div>
 
-    <script src="https://vjs.zencdn.net/8.6.1/video.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <script>
+        // PASO 2: Definir la URL del stream
+        
+        // ¡IMPORTANTE! Se utiliza un proxy público (cors-anywhere) para evitar el problema de CORS
+        // que impide que el navegador cargue el stream directamente desde el servidor CloudFront.
+        var originalUrl = 'https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8';
+        var proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+        var videoUrl = proxyUrl + originalUrl; 
+        
+        var video = document.getElementById('video');
+
+        // PASO 3: Inicializar hls.js
+        if (Hls.isSupported()) {
+            var hls = new Hls();
+            
+            // Cargar el stream (a través del proxy) y adjuntarlo al elemento de video
+            hls.loadSource(videoUrl);
+            hls.attachMedia(video);
+            
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                console.log("Stream cargado con éxito. Intentando reproducir.");
+                // Intentar iniciar la reproducción
+                video.play().catch(error => {
+                    console.warn("La reproducción automática falló (generalmente por políticas del navegador). El usuario debe hacer clic en Play.", error);
+                });
+            });
+
+            // Manejo de errores para debugging
+            hls.on(Hls.Events.ERROR, function (event, data) {
+                if (data.fatal) {
+                    console.error("Error fatal de HLS.js:", data);
+                    // Puedes intentar destruir la instancia de HLS y recargar la página
+                    // hls.destroy();
+                    // window.location.reload(); 
+                }
+            });
+
+        } 
+        
+        // PASO 4: Soporte nativo de Safari/iOS
+        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = originalUrl; // Usamos la URL original ya que Safari maneja CORS de forma diferente
+            video.addEventListener('loadedmetadata', function() {
+                video.play();
+            });
+        } 
+        
+        // PASO 5: Mensaje de error si no es compatible
+        else {
+            video.innerHTML = 'Tu navegador no soporta la reproducción de este tipo de video.';
+            console.error("Este navegador no soporta HLS ni hls.js.");
+        }
+    </script>
 
 </body>
 </html>
