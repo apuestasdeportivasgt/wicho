@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
 <body>
-<video id="v" controls autoplay muted style="width:100%; max-width:900px;"></video>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+
+<video id="video" controls autoplay muted style="width:100%;max-width:900px;background:black"></video>
+
 <script>
-const url = "https://cors-proxy.elfsight.com/?url=" + 
-            encodeURIComponent("https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8");
+    // ¡Aquí el truco! Usamos un proxy que elimina CORS
+    const source = "https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8";
+    const url = "https://cors-proxy.elfsight.com/?url=" + encodeURIComponent(source);
 
-const video = document.getElementById("v");
+    const video = document.getElementById("video");
 
-if (Hls.isSupported()) {
-  const hls = new Hls({ debug: true });
-  hls.loadSource(url);
-  hls.attachMedia(video);
-} else {
-  video.src = url;
-}
+    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = url;
+    } else {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+    }
 </script>
+
 </body>
 </html>
