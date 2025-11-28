@@ -1,28 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <title>Reproductor HLS</title>
+    <style>
+        /* Estilos opcionales para que el video ocupe un buen tamaño */
+        #video {
+            width: 80%;
+            max-width: 900px;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
 </head>
 <body>
 
-<video id="video" controls autoplay muted style="width:100%;max-width:900px;background:black"></video>
+    <h1>Reproductor de Stream M3U8</h1>
 
-<script>
-    // ¡Aquí el truco! Usamos un proxy que elimina CORS
-    const source = "https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8";
-    const url = "https://cors-proxy.elfsight.com/?url=" + encodeURIComponent(source);
+    <video id="video" controls autoplay></video>
 
-    const video = document.getElementById("video");
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = url;
-    } else {
-        const hls = new Hls();
-        hls.loadSource(url);
-        hls.attachMedia(video);
-    }
-</script>
+    <script>
+        // PASO 2: Definir la URL de tu stream M3U8
+        var videoUrl = 'https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8';
+        var video = document.getElementById('video');
+
+        // PASO 3: Inicializar hls.js
+        if (Hls.isSupported()) {
+            var hls = new Hls();
+            
+            // Cargar el stream y adjuntarlo al elemento de video
+            hls.loadSource(videoUrl);
+            hls.attachMedia(video);
+            
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                console.log("Stream cargado con éxito.");
+                // Si quieres que el video comience a reproducirse inmediatamente después de cargarse:
+                // video.play(); 
+            });
+        } 
+        
+        // PASO 4: Soporte nativo de Safari/iOS (si falla hls.js)
+        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // Asignar directamente la URL para navegadores con soporte HLS nativo
+            video.src = videoUrl;
+            video.addEventListener('loadedmetadata', function() {
+                // video.play();
+            });
+        } 
+        
+        // PASO 5: Mensaje de error
+        else {
+            console.error("Este navegador no soporta HLS ni hls.js.");
+            video.innerHTML = 'Tu navegador no soporta la reproducción de este video.';
+        }
+    </script>
 
 </body>
 </html>
