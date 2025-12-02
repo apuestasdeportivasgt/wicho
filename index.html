@@ -2,17 +2,16 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
   <title>Reproductor Robótico</title>
 
   <style>
-    /* --- Estilo Robótico Futurista --- */
     :root {
       --cian: #00eaff;
-      --cian2: #00bcd4;
       --bg1: #02040a;
       --bg2: #07131f;
     }
+
     html,body{
       height:100%;
       margin:0;
@@ -25,7 +24,6 @@
       overflow:hidden;
     }
 
-    /* Efecto de líneas de circuito */
     body::before {
       content:"";
       position:absolute;
@@ -51,18 +49,23 @@
 
     .wrap {
       position:relative;
-      padding:20px;
-      border-radius:20px;
-      background:rgba(0,20,30,0.4);
+      padding:18px;
+      border-radius:18px;
+      background:rgba(0,20,30,0.45);
       box-shadow:
-        0 0 25px rgba(0,255,255,0.3),
-        inset 0 0 15px rgba(0,255,255,0.15);
+        0 0 20px rgba(0,255,255,0.25),
+        inset 0 0 12px rgba(0,255,255,0.15);
       backdrop-filter: blur(6px);
+      width: fit-content;
+      max-width: 100%;
     }
 
+    /* -------- DESKTOP -------- */
     video{
       width:75vw;
       height:75vh;
+      max-width:100%;
+      max-height:100%;
       border-radius:18px;
       background:#000;
       border:2px solid rgba(0,255,255,0.4);
@@ -71,20 +74,37 @@
         0 0 35px rgba(0,100,255,0.3);
     }
 
-    /* Botón futurista */
+    /* -------- MOVIL -------- */
+    @media (max-width: 800px) {
+      body {
+        padding:10px;
+        overflow:auto;
+      }
+      .wrap {
+        width: 100%;
+        padding:12px;
+        border-radius:14px;
+      }
+      video {
+        width: 100%;
+        height: auto;
+        max-height: 55vh;
+        border-radius:14px;
+      }
+    }
+
     #playBtn{
       position:absolute;
       left:50%; top:50%;
       transform:translate(-50%,-50%);
-      padding:15px 25px;
-      font-size:18px;
-      border-radius:12px;
+      padding:14px 22px;
+      font-size:16px;
+      border-radius:10px;
       border:2px solid var(--cian);
       background:rgba(0,40,60,0.6);
       color:var(--cian);
       cursor:pointer;
       text-transform:uppercase;
-      letter-spacing:1px;
       backdrop-filter: blur(4px);
       display:none;
       transition:.25s;
@@ -92,12 +112,13 @@
         0 0 10px rgba(0,255,255,0.5),
         inset 0 0 10px rgba(0,255,255,0.3);
     }
-    #playBtn:hover {
-      background:rgba(0,60,80,0.8);
-      color:white;
-      box-shadow:
-        0 0 20px rgba(0,255,255,0.8),
-        inset 0 0 12px rgba(0,255,255,0.5);
+
+    /* Botón más grande y accesible en móvil */
+    @media (max-width: 800px) {
+      #playBtn {
+        padding:16px 26px;
+        font-size:18px;
+      }
     }
 
   </style>
@@ -138,12 +159,10 @@
     }
 
     playBtn.addEventListener("click", async () => {
-      try {
-        video.muted = false;
-        video.volume = 1.0;
-        await video.play();
-        playBtn.style.display = "none";
-      } catch {}
+      video.muted = false;
+      video.volume = 1.0;
+      await video.play();
+      playBtn.style.display = "none";
     });
   </script>
 
