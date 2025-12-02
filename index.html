@@ -1,97 +1,231 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Multi HLS Player</title>
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-<style>
-    body {
-        background: #111;
-        color: #fff;
-        font-family: Arial;
-        margin: 0;
-        padding: 20px;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reproductor HLS — Lista</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#06b6d4;
+      --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.03);
     }
-    h2 {
-        margin-top: 40px;
-        font-size: 20px;
-        border-bottom: 1px solid #444;
-        padding-bottom: 5px;
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    body{background:linear-gradient(180deg,#071025 0%,#071829 60%);color:#e6eef6;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .container{width:100%;max-width:1000px;background:var(--card);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,0.6);}
+    header{display:flex;gap:12px;align-items:center;margin-bottom:12px;}
+    header h1{font-size:18px;margin:0;}
+    header p{margin:0;color:var(--muted);font-size:13px;}
+    .player-wrap{position:relative;border-radius:10px;overflow:hidden;background:var(--bg);box-shadow:0 6px 18px rgba(2,6,23,0.5);}
+    video{width:100%;height:560px;max-height:70vh;background:black;display:block;}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap;}
+    .btn{background:var(--glass);border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:8px;color:var(--muted);cursor:pointer;font-size:14px;}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),#3b82f6);color:#021022;border:none;}
+    .input-like{flex:1;min-width:260px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:13px}
+    .meta{margin-top:10px;color:var(--muted);font-size:13px;}
+    .levels{margin-left:auto;display:flex;gap:6px;align-items:center;}
+    .levels button{padding:6px 8px;border-radius:6px;font-size:13px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--muted);cursor:pointer;}
+    .error{margin-top:8px;color:#ffb4b4;background:rgba(255,20,20,0.06);padding:8px;border-radius:8px;display:none;}
+    @media (max-width:600px){
+      video{height:300px}
+      .levels{width:100%;margin-top:8px;justify-content:flex-start}
     }
-    .player {
-        margin-bottom: 40px;
-    }
-    video {
-        width: 100%;
-        max-width: 700px;
-        background: black;
-        border-radius: 8px;
-        border: 2px solid #333;
-        display: block;
-        margin-top: 10px;
-    }
-</style>
+  </style>
 </head>
-
 <body>
+  <div class="container" role="main">
+    <header>
+      <div>
+        <h1>Reproductor HLS</h1>
+        <p>URL cargada como lista HLS (.m3u8). Reproductor con hls.js (fallback nativo para Safari).</p>
+      </div>
+    </header>
 
-<h1>Multi HLS Player</h1>
+    <div class="player-wrap" aria-label="Reproductor de vídeo">
+      <video id="video" controls playsinline></video>
+    </div>
 
-<div id="players"></div>
+    <div class="controls" style="margin-top:12px;">
+      <input id="url" class="input-like" type="text" aria-label="URL HLS" value="https://x4bnd7lq.fubohd.com/espndeportes/mono.m3u8?token=a38511cbf10da79d6ddf6e35f6730aa879fa0a22-18-1764722985-1764704985" />
+      <button id="loadBtn" class="btn primary">Cargar / Reproducir</button>
+      <button id="copyBtn" class="btn" title="Copiar URL">Copiar URL</button>
 
-<script>
-const streams = [
-    "https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8",
-    "https://d9csq71s6v3mg.cloudfront.net/index.m3u8",
-    "https://d2r6jvvp61kqtl.cloudfront.net/index.m3u8",
-    "https://d3cagxma76aq5s.cloudfront.net/index.m3u8",
-    "https://d2d5r9jek1fe6z.cloudfront.net/index.m3u8",
-    "https://alba-gt-chapinradio-galaxia.stream.mediatiquestream.com/index.m3u8",
-    "https://d3u24c0wx3s042.cloudfront.net/index.m3u8",
-    "https://die1qchpy08nt.cloudfront.net/index.m3u8",
-    "https://d2no0f009otz1i.cloudfront.net/index.m3u8",
-    "https://d1vs5psx2xsb75.cloudfront.net/index.m3u8",
-    "https://dmk7nbp6jo0j.cloudfront.net/index.m3u8",
-    "https://dpgj35ppjrtjz.cloudfront.net/index.m3u8",
-    "https://d63yyf5yop3gl.cloudfront.net/index.m3u8"
-];
+      <div class="levels" id="levelsWrap" aria-hidden="true">
+        <span style="color:var(--muted);font-size:13px;">Calidad:</span>
+        <div id="levelsButtons"></div>
+      </div>
+    </div>
 
-const container = document.getElementById("players");
+    <div class="meta">
+      <strong>Consejos:</strong> Si el reproductor no inicia en Chrome/Edge/Firefox usa el botón "Cargar / Reproducir". Safari iOS/macOS reproduce de forma nativa.
+    </div>
 
-streams.forEach((url, index) => {
-    const block = document.createElement("div");
-    block.className = "player";
+    <div id="error" class="error" role="alert"></div>
+  </div>
 
-    block.innerHTML = `
-        <h2>Stream #${index + 1}</h2>
-        <video id="video${index}" controls muted></video>
-        <p>${url}</p>
-    `;
+  <!-- hls.js desde CDN (jsDelivr) -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.3/dist/hls.min.js"></script>
+  <script>
+    (function(){
+      const video = document.getElementById('video');
+      const urlInput = document.getElementById('url');
+      const loadBtn = document.getElementById('loadBtn');
+      const copyBtn = document.getElementById('copyBtn');
+      const errorBox = document.getElementById('error');
+      const levelsWrap = document.getElementById('levelsWrap');
+      const levelsButtons = document.getElementById('levelsButtons');
 
-    container.appendChild(block);
+      // Inicial URL (del input)
+      let hls = null;
 
-    const video = document.getElementById("video" + index);
+      function showError(msg){
+        errorBox.style.display = 'block';
+        errorBox.textContent = msg;
+        console.error(msg);
+      }
+      function clearError(){
+        errorBox.style.display = 'none';
+        errorBox.textContent = '';
+      }
 
-    if (Hls.isSupported()) {
-        let hls = new Hls({
-            debug: false
+      function isLikelyHls(url){
+        return url && url.trim().toLowerCase().includes('.m3u8');
+      }
+
+      function destroyHls(){
+        if(hls){
+          try{ hls.destroy(); }catch(e){ console.warn('Error destruyendo hls:', e); }
+          hls = null;
+        }
+      }
+
+      function populateLevels(){
+        // limpia
+        levelsButtons.innerHTML = '';
+        if(!hls || !hls.levels) {
+          levelsWrap.setAttribute('aria-hidden','true');
+          return;
+        }
+        const levels = hls.levels;
+        if(!levels || levels.length === 0){
+          levelsWrap.setAttribute('aria-hidden','true');
+          return;
+        }
+        levelsWrap.setAttribute('aria-hidden','false');
+
+        // botón "Auto"
+        const autoBtn = document.createElement('button');
+        autoBtn.textContent = 'Auto';
+        autoBtn.onclick = ()=>{
+          hls.currentLevel = -1; // auto
+          highlightSelected(-1);
+        };
+        levelsButtons.appendChild(autoBtn);
+
+        levels.forEach((lvl, idx) => {
+          const b = document.createElement('button');
+          // descripción si existe
+          const res = (lvl.height ? lvl.height + 'p' : (lvl.bitrate ? Math.round(lvl.bitrate/1000) + 'kb' : ('nivel '+idx)));
+          b.textContent = res;
+          b.onclick = ()=> { hls.currentLevel = idx; highlightSelected(idx); };
+          levelsButtons.appendChild(b);
         });
 
-        hls.loadSource(url);
-        hls.attachMedia(video);
+        function highlightSelected(selected){
+          Array.from(levelsButtons.children).forEach((btn,i)=>{
+            btn.style.opacity = ((selected === -1 && i===0) || (selected === i-1)) ? '1' : '0.65';
+            btn.style.fontWeight = ((selected === -1 && i===0) || (selected === i-1)) ? '600' : '400';
+          });
+        }
+      }
 
-        hls.on(Hls.Events.ERROR, function (event, data) {
-            console.error("Error en stream", index + 1, data);
+      function attachHls(url){
+        clearError();
+        destroyHls();
+
+        if(Hls.isSupported() && isLikelyHls(url)){
+          hls = new Hls({
+            autoStartLoad: true,
+            capLevelToPlayerSize: true,
+            maxBufferLength: 30
+          });
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+            hls.loadSource(url);
+          });
+
+          hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+            // Reproducir automáticamente si el usuario lo pidió (solo si el navegador lo permite)
+            video.play().catch(()=>{/* autoplay bloqueado por política del navegador */});
+            populateLevels();
+          });
+
+          hls.on(Hls.Events.ERROR, function (event, data) {
+            const {type, details, fatal} = data;
+            console.warn('hls error', data);
+            if(fatal){
+              switch(data.type){
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  showError('Error de red: no se pudo cargar la lista. Verifica la URL o la conexión.');
+                  hls.destroy();
+                  break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  showError('Error de reproducción (media). Intentando recuperar...');
+                  hls.recoverMediaError();
+                  break;
+                default:
+                  showError('Error fatal en hls.js: ' + (data.details || 'desconocido'));
+                  hls.destroy();
+                  break;
+              }
+            }
+          });
+        } else {
+          // Safari u otros navegadores con soporte nativo, o URL no .m3u8
+          video.src = url;
+          video.addEventListener('error', function onErr(){
+            showError('El reproductor nativo no pudo reproducir la URL. Si estás en Chrome/Firefox/Edge prueba el botón "Cargar / Reproducir".');
+            video.removeEventListener('error', onErr);
+          });
+          // intenta reproducir
+          video.play().catch(()=>{/* autoplay bloqueado */});
+        }
+      }
+
+      // Botones
+      loadBtn.addEventListener('click', function(){
+        const url = urlInput.value.trim();
+        if(!url){
+          showError('Introduce una URL válida (.m3u8).');
+          return;
+        }
+        clearError();
+        // Si el navegador soporta hls.js y la URL parece .m3u8, usar hls.js
+        attachHls(url);
+      });
+
+      copyBtn.addEventListener('click', function(){
+        navigator.clipboard?.writeText(urlInput.value).then(()=>{
+          copyBtn.textContent = 'Copiado ✓';
+          setTimeout(()=>copyBtn.textContent = 'Copiar URL', 1200);
+        }).catch(()=>{
+          copyBtn.textContent = 'No se pudo copiar';
+          setTimeout(()=>copyBtn.textContent = 'Copiar URL', 1200);
         });
+      });
 
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        // Safari / iPhone
-        video.src = url;
-    }
-});
-</script>
+      // Cargar al inicio la URL del campo
+      window.addEventListener('load', function(){
+        // Autocarga inicial (no forzamos autoplay, solo cargamos)
+        const initialUrl = urlInput.value.trim();
+        if(initialUrl) attachHls(initialUrl);
+      });
 
+      // limpiar al cerrar/recargar la página
+      window.addEventListener('beforeunload', function(){ destroyHls(); });
+    })();
+  </script>
 </body>
 </html>
