@@ -1,65 +1,76 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Reproductor HLS</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.3"></script>
-
+  <title>Reproductor HLS — Autoplay</title>
   <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: #000;
-    }
-    .wrap {
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-    video {
-      width: 100%;
-      max-width: 1100px;
-      border-radius: 10px;
-      background: #000;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.7);
-    }
+    /* Diseño minimalista: sólo el reproductor, nada de texto revuelto */
+    :root{--bg:#0b0b0c}
+    html,body{height:100%;margin:0;background:var(--bg);display:flex;align-items:center;justify-content:center}
+    .player-wrap{width:100%;max-width:960px;padding:20px;box-sizing:border-box}
+    video{width:100%;height:auto;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.6);background:#000;display:block}
+    /* Botón grande centrado para reproducir cuando el navegador bloquee autoplay */
+    .big-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:system-ui,Arial;border-radius:999px;padding:14px 18px;font-size:16px;cursor:pointer;border:none;background:rgba(255,255,255,0.06);backdrop-filter:blur(4px);display:none}
+    .player-container{position:relative}
   </style>
 </head>
 <body>
-
-  <div class="wrap">
-    <!-- inicia muted para permitir autoplay -->
-    <video id="video" autoplay muted playsinline></video>
+  <div class="player-wrap">
+    <div class="player-container">
+      <video id="player" playsinline autoplay muted controls></video>
+      <button id="bigPlay" class="big-play" aria-hidden="true">Reproducir</button>
+    </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.1/dist/hls.min.js"></script>
   <script>
-    const video = document.getElementById("video");
-    const url = "https://x4bnd7lq.fubohd.com/espndeportes/mono.m3u8?token=a38511cbf10da79d6ddf6e35f6730aa879fa0a22-18-1764722985-1764704985";
+    const video = document.getElementById('player');
+    const bigPlay = document.getElementById('bigPlay');
+    const src = 'https://x4bnd7lq.fubohd.com/espndeportes/mono.m3u8?token=a38511cbf10da79d6ddf6e35f6730aa879fa0a22-18-1764722985-1764704985';
 
-    function enableSound() {
-      // activar sonido después de 1 segundo cuando ya está reproduciendo
-      setTimeout(() => {
-        video.muted = false;
-        video.volume = 1.0;
-      }, 1000);
-    }
-
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(url);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play().then(enableSound).catch(() => {});
+    function tryPlay() {
+      video.play().then(()=>{
+        bigPlay.style.display = 'none';
+      }).catch(()=>{
+        // Si autoplay fue bloqueado por el navegador, mostrar botón grande
+        bigPlay.style.display = 'block';
       });
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = url;
-      video.play().then(enableSound).catch(() => {});
     }
-  </script>
 
+    // Intentar reproducir al cargar
+    if (Hls && Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, tryPlay);
+      hls.on(Hls.Events.ERROR, function(event, data) {
+        console.warn('HLS error', data);
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari / iOS nativo
+      video.src = src;
+      video.addEventListener('loadedmetadata', tryPlay);
+    } else {
+      // Fallback: mostrar botón para que el usuario intente reproducir
+      bigPlay.style.display = 'block';
+    }
+
+    // Si el usuario presiona el botón, quitar muted para escuchar sonido (si desea)
+    bigPlay.addEventListener('click', async ()=>{
+      try {
+        video.muted = false; // intenta habilitar audio — algunos navegadores requieren interacción
+        await video.play();
+        bigPlay.style.display = 'none';
+      } catch(e) {
+        console.error(e);
+      }
+    });
+
+    // Reintentar autoplay si el usuario interactúa con la página
+    window.addEventListener('click', ()=>{
+      if (video.paused) tryPlay();
+    }, {once:true});
+  </script>
 </body>
 </html>
