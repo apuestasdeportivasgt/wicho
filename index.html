@@ -1,37 +1,42 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xtrema 101.3 FM</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xtrema 101.3 FM</title>
+
+  <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
+  <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <style>
+      body {
+          background:#111;
+          color:white;
+          text-align:center;
+          padding:20px;
+      }
+  </style>
 </head>
-<body style="background:#111; color:white; text-align:center; padding:20px;">
 
-<h2>Xtrema 101.3 FM – En vivo</h2>
+<body>
 
-<audio id="player" controls autoplay style="width:90%; max-width:400px;"></audio>
+<h2>Xtrema 101.3 FM – Player Video.js</h2>
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<video id="myPlayer" class="video-js vjs-default-skin" controls autoplay width="500"></video>
 
 <script>
-    var audio = document.getElementById("player");
-    var url = "https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8";
+    const player = videojs("myPlayer");
+    const url = "https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8";
 
     if (Hls.isSupported()) {
-        var hls = new Hls({
-            debug: false,
-            enableWorker: true
-        });
+        const hls = new Hls();
         hls.loadSource(url);
-        hls.attachMedia(audio);
-        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-            audio.play();
-        });
-    } else if (audio.canPlayType("application/vnd.apple.mpegurl")) {
-        audio.src = url;
-        audio.play();
+        hls.attachMedia(player.tech().el());
+        player.play();
     } else {
-        alert("Tu navegador no soporta HLS");
+        player.src({ src: url, type: "application/x-mpegURL" });
+        player.play();
     }
 </script>
 
