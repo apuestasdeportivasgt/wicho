@@ -1,375 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Xtrema 101.3 FM — Player</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xtrema 101.3 FM – Reproductor</title>
 
-  <style>
-    :root{
-      --bg:#0f1724;
-      --card:#0b1220;
-      --accent:#06b6d4;
-      --text:#e6eef6;
-      --muted:#9fb3c4;
-      --radius:12px;
-    }
-    html,body{
-      height:100%;
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
-      background:linear-gradient(180deg,#071025 0%,#071a2a 100%);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-    }
+    <!-- Librería oficial de Mux -->
+    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-player"></script>
 
-    .wrap{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:28px;
-      box-sizing:border-box;
-    }
+    <style>
+        body {
+            background: #0d0d0d;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
 
-    .card{
-      width:100%;
-      max-width:760px;
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius:var(--radius);
-      padding:20px;
-      box-shadow: 0 8px 30px rgba(2,6,23,0.7);
-      border:1px solid rgba(255,255,255,0.03);
-    }
+        h1 {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
 
-    .header{
-      display:flex;
-      gap:16px;
-      align-items:center;
-    }
-    .logo{
-      width:72px;
-      height:72px;
-      border-radius:10px;
-      background:linear-gradient(135deg,var(--accent),#7c3aed);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:700;
-      font-size:18px;
-      color:#032023;
-      box-shadow: inset 0 -6px 12px rgba(255,255,255,0.02);
-    }
-
-    .meta h1{
-      margin:0;
-      font-size:20px;
-      letter-spacing:0.2px;
-    }
-    .meta p{ margin:2px 0 0; color:var(--muted); font-size:13px; }
-
-    .player{
-      margin-top:18px;
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap:14px;
-      align-items:center;
-    }
-
-    .controls{
-      display:flex;
-      gap:12px;
-      align-items:center;
-    }
-
-    .btn{
-      display:inline-grid;
-      place-items:center;
-      width:56px;
-      height:56px;
-      border-radius:12px;
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border:1px solid rgba(255,255,255,0.03);
-      cursor:pointer;
-      transition:transform .12s ease, box-shadow .12s;
-      user-select:none;
-    }
-    .btn:active{ transform:scale(.98); }
-    .btn.play{ width:72px; height:72px; font-size:18px; }
-
-    .status{
-      text-align:left;
-    }
-    .status .live{
-      display:inline-block;
-      background:linear-gradient(90deg,#ff3b30,#ff9500);
-      color:white;
-      font-weight:700;
-      padding:4px 9px;
-      border-radius:999px;
-      font-size:12px;
-    }
-    .meta-small{ color:var(--muted); font-size:13px; margin-top:8px; }
-
-    .progress-wrap{
-      margin-top:14px;
-    }
-    .progress{
-      appearance:none;
-      -webkit-appearance:none;
-      width:100%;
-      height:8px;
-      background:rgba(255,255,255,0.04);
-      border-radius:999px;
-      overflow:hidden;
-    }
-    .progress::-webkit-progress-bar{ background:transparent; }
-    .progress::-webkit-progress-value{ background:var(--accent); }
-
-    .vol{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      margin-left:8px;
-    }
-    .vol input[type="range"]{
-      width:110px;
-    }
-
-    .small{
-      font-size:13px;
-      color:var(--muted);
-    }
-
-    /* Responsive */
-    @media (max-width:560px){
-      .player{ grid-template-columns: 1fr; }
-      .controls{ justify-content:space-between; width:100%; }
-      .btn.play{ width:64px; height:64px; }
-      .vol input[type="range"]{ width:90px; }
-    }
-  </style>
+        mux-player {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card" role="application" aria-label="Reproductor Xtrema 101.3 FM">
-      <div class="header">
-        <div class="logo" aria-hidden="true">XT</div>
-        <div class="meta">
-          <h1>Xtrema 101.3 FM</h1>
-          <p>Radio en vivo — Streaming HLS</p>
-          <div class="meta-small">Stream: <code id="streamUrl">https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8</code></div>
-        </div>
-      </div>
 
-      <div class="player" style="margin-top:12px;">
-        <div>
-          <div class="status">
-            <span class="live" id="liveBadge">EN VIVO</span>
-            <div class="small" id="playerState">Estado: parado</div>
-          </div>
+    <h1>Xtrema 101.3 FM en vivo</h1>
 
-          <!-- Progress (for live streams this is just an indicator) -->
-          <div class="progress-wrap" aria-hidden="true" style="margin-top:12px;">
-            <progress class="progress" id="progress" value="0" max="100"></progress>
-          </div>
-        </div>
+    <mux-player
+        stream-type="live"
+        audio
+        autoplay
+        src="https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8"
+    ></mux-player>
 
-        <div class="controls" style="justify-self:end;">
-          <button class="btn play" id="playBtn" title="Reproducir / Pausar" aria-pressed="false">
-            ▶
-          </button>
-
-          <div style="display:flex;flex-direction:column;align-items:flex-end;">
-            <div style="display:flex;align-items:center;">
-              <div class="vol">
-                <label for="vol" class="small" style="margin-right:6px;">Vol</label>
-                <input id="vol" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volumen">
-              </div>
-            </div>
-
-            <div style="margin-top:8px;">
-              <button class="btn" id="openNative" title="Abrir en nueva pestaña" aria-label="Abrir fuente en nueva pestaña">⧉</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Hidden audio element used by hls.js or native HLS -->
-      <audio id="audio" crossorigin="anonymous"></audio>
-
-      <div style="margin-top:14px; color:var(--muted); font-size:13px;">
-        Si tu navegador no reproduce el stream, abre el enlace en VLC u otro reproductor compatible con HLS.
-      </div>
-    </div>
-  </div>
-
-  <!-- hls.js desde CDN (usa la última versión estable) -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script>
-    (function(){
-      const STREAM = 'https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8';
-      const audio = document.getElementById('audio');
-      const playBtn = document.getElementById('playBtn');
-      const vol = document.getElementById('vol');
-      const playerState = document.getElementById('playerState');
-      const liveBadge = document.getElementById('liveBadge');
-      const progress = document.getElementById('progress');
-      const openNative = document.getElementById('openNative');
-
-      let hls = null;
-      let isPlaying = false;
-      let isLoaded = false;
-
-      // attempt native HLS first (Safari, some mobile browsers)
-      function setupNative() {
-        if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-          audio.src = STREAM;
-          isLoaded = true;
-          return true;
-        }
-        return false;
-      }
-
-      // setup hls.js fallback
-      function setupHlsJs() {
-        if (window.Hls && Hls.isSupported()) {
-          hls = new Hls({ enableWorker: true, lowLatencyMode: false });
-          hls.attachMedia(audio);
-          hls.on(Hls.Events.MEDIA_ATTACHED, function() {
-            hls.loadSource(STREAM);
-          });
-
-          hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
-            isLoaded = true;
-            // if manifest lists levels (bitrates), you could expose selection here
-            console.log('Manifest parsed, available levels:', data.levels ? data.levels.length : 0);
-          });
-
-          hls.on(Hls.Events.ERROR, function(event, data) {
-            console.error('hls.js error', data);
-            showState('Error: ' + (data.type || 'unknown'));
-          });
-
-          // update a simple progress indicator when fragments load
-          hls.on(Hls.Events.FRAG_LOADED, function() {
-            // pulse progress to indicate activity for live stream
-            pulseProgress();
-          });
-          return true;
-        }
-        return false;
-      }
-
-      // fallback: try to set src directly (some browsers might accept .m3u8)
-      function setupFallback() {
-        audio.src = STREAM; // maybe works in some Android builds
-        isLoaded = true;
-      }
-
-      // Initialize player
-      (function init() {
-        if (setupNative()) {
-          console.log('Using native HLS support.');
-        } else if (setupHlsJs()) {
-          console.log('Using hls.js fallback.');
-        } else {
-          console.warn('No HLS support detected, using fallback src (may not play).');
-          setupFallback();
-        }
-
-        // volume
-        audio.volume = parseFloat(vol.value);
-        vol.addEventListener('input', e => {
-          audio.volume = parseFloat(e.target.value);
-        });
-
-        // events
-        audio.addEventListener('playing', () => showState('Reproduciendo'));
-        audio.addEventListener('pause', () => showState('Pausado'));
-        audio.addEventListener('waiting', () => showState('Conectando...'));
-        audio.addEventListener('error', () => showState('Error al reproducir'));
-        audio.addEventListener('emptied', () => showState('Vacío'));
-
-        // play/pause button
-        playBtn.addEventListener('click', async () => {
-          if (!isLoaded) {
-            showState('Cargando...');
-          }
-          togglePlay();
-        });
-
-        // open native source
-        openNative.addEventListener('click', () => {
-          window.open(STREAM, '_blank', 'noopener');
-        });
-
-        // keyboard: space toggles play
-        document.addEventListener('keydown', (e) => {
-          if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
-            e.preventDefault();
-            togglePlay();
-          }
-        });
-      })();
-
-      function showState(txt){
-        playerState.textContent = 'Estado: ' + txt;
-      }
-
-      function togglePlay(){
-        if (isPlaying) {
-          audio.pause();
-          playBtn.textContent = '▶';
-          playBtn.setAttribute('aria-pressed','false');
-          isPlaying = false;
-        } else {
-          // try to play
-          const p = audio.play();
-          if (p !== undefined) {
-            p.then(() => {
-              playBtn.textContent = '⏸';
-              playBtn.setAttribute('aria-pressed','true');
-              isPlaying = true;
-            }).catch(err => {
-              console.warn('Reproducción bloqueada (autoplay); se requiere interacción.', err);
-              showState('Toque para reproducir');
-            });
-          } else {
-            // older browsers
-            playBtn.textContent = '⏸';
-            playBtn.setAttribute('aria-pressed','true');
-            isPlaying = true;
-          }
-        }
-      }
-
-      // Simple visual pulse for progress bar (since live stream has no duration)
-      let pulseTimeout = null;
-      function pulseProgress(){
-        progress.value = 0;
-        progress.max = 100;
-        let v = 0;
-        clearTimeout(pulseTimeout);
-        function step(){
-          v = (v + Math.random()*15 + 10);
-          if (v > 100) v = 100;
-          progress.value = v;
-          pulseTimeout = setTimeout(() => {
-            if (v < 100) step();
-            else { progress.value = 0; }
-          }, 220);
-        }
-        step();
-      }
-
-      // try preloading manifest (best-effort)
-      // not required — hls.js handles internal loading
-
-      // Accessibility: announce live
-      liveBadge.setAttribute('aria-live','polite');
-    })();
-  </script>
 </body>
 </html>
