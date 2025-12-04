@@ -3,44 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xtrema 101.3 FM – Reproductor</title>
-
-    <!-- Librería oficial de Mux -->
-    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-player"></script>
-
-    <style>
-        body {
-            background: #0d0d0d;
-            color: white;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 22px;
-            margin-bottom: 20px;
-        }
-
-        mux-player {
-            width: 100%;
-            max-width: 500px;
-            border-radius: 20px;
-            overflow: hidden;
-        }
-    </style>
+    <title>Xtrema 101.3 FM</title>
 </head>
-<body>
+<body style="background:#111; color:white; text-align:center; padding:20px;">
 
-    <h1>Xtrema 101.3 FM en vivo</h1>
+<h2>Xtrema 101.3 FM – En vivo</h2>
 
-    <mux-player
-        stream-type="live"
-        audio
-        autoplay
-        src="https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8"
-    ></mux-player>
+<audio id="player" controls autoplay style="width:90%; max-width:400px;"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<script>
+    var audio = document.getElementById("player");
+    var url = "https://d3lqnkl13x5lzq.cloudfront.net/index.m3u8";
+
+    if (Hls.isSupported()) {
+        var hls = new Hls({
+            debug: false,
+            enableWorker: true
+        });
+        hls.loadSource(url);
+        hls.attachMedia(audio);
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+            audio.play();
+        });
+    } else if (audio.canPlayType("application/vnd.apple.mpegurl")) {
+        audio.src = url;
+        audio.play();
+    } else {
+        alert("Tu navegador no soporta HLS");
+    }
+</script>
 
 </body>
 </html>
