@@ -1,31 +1,17 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xtrema 101.3 FM - Reproductor Seguro</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #000; color: #fff; padding: 20px; }
-        .player-container { max-width: 600px; margin: 0 auto; }
-        audio { width: 100%; max-width: 600px; height: 60px; }
-        .info { margin-top: 20px; font-size: 14px; }
-    </style>
-</head>
-<body>
-    <div class="player-container">
-        <h1>🔥 Xtrema 101.3 FM en Vivo - Guatemala</h1>
-        <p>¡Ponte pilas con los mejores DJs 24/7!</p>
-        
-        <!-- Reproductor de audio nativo (siempre funciona, sin dependencias) -->
-        <audio controls preload="metadata" style="width: 100%;">
-            <source src="https://d2qsan2ut81n2k.cloudfront.net/live/c2cce928-c69c-45d5-bd0a-5a5eba167a0d/ts:abr.m3u8" type="application/x-mpegURL">
-            Tu navegador no soporta audio HLS. Usa Chrome/Firefox o la app de ChapinRadio.
-        </audio>
-        
-        <div class="info">
-            <p><strong>Programa actual (8 dic 2025):</strong> Fusión X (10:00-14:00) - Ottoniel + DJ Rubercy</p>
-            <p>Stream oficial de Central de Radios. Si no suena, refresca o verifica tu conexión.</p>
-        </div>
-    </div>
-</body>
-</html>
+<!-- Reproductor oficial Xtrema 101.3 FM -->
+<div style="max-width: 600px; margin: 20px auto;">
+    <ned-player
+        player-audio="true"
+        stream-url="https://d2qsan2ut81n2k.cloudfront.net/live/c2cce928-c69c-45d5-bd0a-5a5eba167a0d/ts:abr.m3u8"
+        title="Xtrema 101.3 FM"
+        subtitle="Guatemala - DJs 24/7"
+        logo="https://alba-gt-chapinradio.cdn.mediatiquepress.com/wp-content/uploads/2025/10/Xtrema-101-3-FM-en-linea-Guatemala-Chapin-Radio-1024x572.jpg"
+        primary-color="#e50914"
+        background-color="#000000"
+        autoplay="false"
+        muted="false">
+    </ned-player>
+</div>
+
+<!-- Script requerido (cárgalo siempre) -->
+<script async src="https://cdn.getadjacent.com/amd/ned-adjacent.min.js?ver=490"></script>
