@@ -1,45 +1,65 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xtrema 101.3 FM</title>
-
-  <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
-  <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reproductor HLS</title>
   <style>
-      body {
-          background:#111;
-          color:white;
-          text-align:center;
-          padding:20px;
-      }
+    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#0f172a; color:#e6eef8; }
+    .player { width: 90vw; max-width: 900px; }
+    video { width:100%; height:auto; background:black; border-radius:10px; box-shadow:0 6px 20px rgba(2,6,23,0.6); }
+    .info { margin-top:10px; font-size:14px; color:#9fb0d9; }
+    .error { color:#ff7b7b; }
   </style>
 </head>
-
 <body>
+  <div class="player">
+    <video id="video" controls playsinline crossorigin="anonymous"></video>
+    <div class="info">
+      Fuente: <code>https://d2qsan2ut81n2k.cloudfront.net/live/c2cce928-c69c-45d5-bd0a-5a5eba167a0d/ts:abr.m3u8</code>
+      <div id="status"></div>
+    </div>
+  </div>
 
-<h2>Xtrema 101.3 FM – Player Video.js</h2>
+  <!-- hls.js CDN (usa la versión más reciente si lo deseas) -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
+  <script>
+    const video = document.getElementById('video');
+    const status = document.getElementById('status');
+    const url = 'https://d2qsan2ut81n2k.cloudfront.net/live/c2cce928-c69c-45d5-bd0a-5a5eba167a0d/ts:abr.m3u8';
 
-<video id="myPlayer" class="video-js vjs-default-skin" controls autoplay width="500"></video>
-
-<script>
-    const player = videojs("myPlayer");
-    const url = "https://d2qsan2ut81n2k.cloudfront.net/live/c2cce928-c69c-45d5-bd0a-5a5eba167a0d/ts:abr.m3u8";
-
-    if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(url);
-        hls.attachMedia(player.tech().el());
-        player.play();
-    } else {
-        player.src({ src: url, type: "application/x-mpegURL" });
-        player.play();
+    function setStatus(msg, isError) {
+      status.textContent = msg;
+      status.className = isError ? 'error' : '';
     }
-</script>
 
+    // Si el navegador soporta HLS nativo (Safari), usa el src directo
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url;
+      setStatus('Reproduciendo con HLS nativo del navegador.');
+      video.addEventListener('error', () => setStatus('Error de reproducción nativa. Revisa consola y CORS.', true));
+    } else if (window.Hls && Hls.isSupported()) {
+      const hls = new Hls({
+        // debug: true
+      });
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+        setStatus('Cargando playlist con hls.js …');
+        hls.loadSource(url);
+      });
+
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        setStatus('Manifest cargado — puedes reproducir.');
+        video.play().catch(()=>{/* reproducción automática bloqueada por política */});
+      });
+
+      hls.on(Hls.Events.ERROR, function (event, data) {
+        console.error('hls.js error', event, data);
+        setStatus('Error hls.js: ' + (data && data.type ? data.type + ' — ' + (data.details || '') : 'desconocido'), true);
+      });
+    } else {
+      setStatus('HLS no es compatible en este navegador.', true);
+    }
+  </script>
 </body>
 </html>
-
