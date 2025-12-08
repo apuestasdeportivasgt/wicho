@@ -1,17 +1,25 @@
-<!-- Reproductor oficial Xtrema 101.3 FM -->
-<div style="max-width: 600px; margin: 20px auto;">
-    <ned-player
-        player-audio="true"
-        stream-url="https://d2qsan2ut81n2k.cloudfront.net/live/c2cce928-c69c-45d5-bd0a-5a5eba167a0d/ts:abr.m3u8"
-        title="Xtrema 101.3 FM"
-        subtitle="Guatemala - DJs 24/7"
-        logo="https://alba-gt-chapinradio.cdn.mediatiquepress.com/wp-content/uploads/2025/10/Xtrema-101-3-FM-en-linea-Guatemala-Chapin-Radio-1024x572.jpg"
-        primary-color="#e50914"
-        background-color="#000000"
-        autoplay="false"
-        muted="false">
-    </ned-player>
-</div>
+<ned-player player-auto-play="true" player-auto-init="false" player-only-audio="" player-name="live-stream" player-is-live="" class=""><adjacent-media-chrome-mux class="ned-player-child" player-name="live-stream" id="live-stream-1765219724010-internal">
+            
+<template id="ned-player-template-live">
+    <style>:host{height:100%;left:0;position:absolute;top:0;width:100%}.ned-player__ad-container{left:0;position:absolute;top:0;z-index:20}media-controller{position:absolute;z-index:10}media-controller media-time-display.show-breakpointsm,media-controller media-time-range,media-controller media-volume-range{display:none}media-controller .centered-chrome media-play-button{--media-button-icon-width:50px;--media-button-icon-height:50px;border-radius:100px;margin:0 20px}media-controller media-seek-backward-button,media-controller media-seek-forward-button{border-radius:100px;height:44px;width:44px}media-controller media-control-bar{--media-control-background:transparent;--media-control-height:20px;--media-control-hover-background:rgba(0,0,0,.2);background-color:rgba(0,0,0,.6);border-radius:10px 10px 0 0;justify-content:flex-end;margin:10px auto 0}media-controller[platform=youtube] media-control-bar{background-image:linear-gradient(180deg,#9e0000,transparent)}media-controller[media-audio] media-control-bar{justify-content:center;margin:0}media-controller[breakpointsm] media-control-bar{border-radius:10px;margin:10px}media-controller[breakpointsm] media-time-display.show-breakpointsm,media-controller[breakpointsm] media-time-range,media-controller[breakpointsm] media-volume-range{display:inline-flex}media-controller[breakpointsm] media-time-display.hide-breakpointsm{display:none}
+</style>
+    <div class="ned-player__ad-container"></div>
+    <media-controller>
+        <slot name="media" slot="media"></slot>
+        <media-rendition-menu hidden="" anchor="auto"></media-rendition-menu>
+        <div slot="centered-chrome" class="centered-chrome">
+            <media-play-button></media-play-button>
+        </div>
+        <media-control-bar>
+            <media-mute-button></media-mute-button>
+            <media-volume-range></media-volume-range>
+            <media-rendition-menu-button></media-rendition-menu-button>
+            <media-live-button></media-live-button>
+            <media-fullscreen-button></media-fullscreen-button>
+        </media-control-bar>
+    </media-controller>
+</template>
 
-<!-- Script requerido (cárgalo siempre) -->
-<script async src="https://cdn.getadjacent.com/amd/ned-adjacent.min.js?ver=490"></script>
+<media-theme template="ned-player-template-live">
+    <mux-video src="https://d2qsan2ut81n2k.cloudfront.net/live/c2cce928-c69c-45d5-bd0a-5a5eba167a0d/ts:abr.m3u8" env-key="" slot="media" autoplay="" crossorigin="" preload="none" id="live-stream-1765219724010-internal-media" tabindex="-1"></mux-video>
+</media-theme></adjacent-media-chrome-mux></ned-player>
