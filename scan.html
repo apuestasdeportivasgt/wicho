@@ -48,6 +48,38 @@
             padding: 30px;
         }
         
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         .input-section {
             margin-bottom: 30px;
         }
@@ -63,16 +95,22 @@
             color: #333;
         }
         
-        input[type="text"] {
+        input[type="text"], textarea {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 1em;
             transition: border-color 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        input[type="text"]:focus {
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        input[type="text"]:focus, textarea:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -121,6 +159,15 @@
         
         .btn-success:hover {
             background: #218838;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
         }
         
         .results-section {
@@ -177,6 +224,7 @@
         .result-actions {
             display: flex;
             gap: 5px;
+            flex-wrap: wrap;
         }
         
         .btn-small {
@@ -198,13 +246,42 @@
             margin-bottom: 10px;
         }
         
-        .instructions ol {
+        .instructions ol, .instructions ul {
             margin-left: 20px;
             color: #856404;
         }
         
         .instructions li {
             margin-bottom: 8px;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .copy-code-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+        
+        .copy-code-btn:hover {
+            background: #5568d3;
         }
         
         .loading {
@@ -232,10 +309,25 @@
             margin-top: 15px;
         }
         
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            border-radius: 8px;
+            color: #0c5460;
+            margin-top: 15px;
+        }
+        
         .empty {
             text-align: center;
             padding: 40px;
             color: #6c757d;
+        }
+
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 4px;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -247,116 +339,296 @@
         </div>
         
         <div class="content">
-            <div class="instructions">
-                <h3>📋 Instrucciones de uso:</h3>
-                <ol>
-                    <li>Ingresa la URL completa de un canal (ejemplo: https://futbollibre.mx/en-vivo/fox-sports-premium)</li>
-                    <li>Haz clic en "Buscar Enlaces M3U8"</li>
-                    <li>La herramienta intentará encontrar todos los enlaces m3u8 en la página</li>
-                    <li>Copia los enlaces que necesites o descárgalos todos en un archivo</li>
-                </ol>
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('method1')">📋 Método 1: Script de Consola</button>
+                <button class="tab" onclick="switchTab('method2')">🔍 Método 2: Análisis de Página</button>
+                <button class="tab" onclick="switchTab('method3')">📝 Método 3: Entrada Manual</button>
             </div>
             
-            <div class="input-section">
-                <div class="input-group">
-                    <label for="urlInput">🔗 URL del canal o página:</label>
-                    <input 
-                        type="text" 
-                        id="urlInput" 
-                        placeholder="https://futbollibre.mx/en-vivo/fox-sports-premium"
-                        value="https://futbollibre.mx/">
+            <!-- MÉTODO 1: Script de Consola -->
+            <div id="method1" class="tab-content active">
+                <div class="instructions">
+                    <h3>🎯 Método más efectivo - Script de Consola del Navegador</h3>
+                    <p>Este método captura todos los enlaces m3u8 que se cargan dinámicamente:</p>
+                    <ol>
+                        <li>Abre la página del canal en tu navegador (ejemplo: <span class="highlight">futbollibre.mx/embed/eventos.html?r=...</span>)</li>
+                        <li>Presiona <strong>F12</strong> o <strong>Ctrl+Shift+I</strong> (Cmd+Option+I en Mac)</li>
+                        <li>Ve a la pestaña <strong>Console (Consola)</strong></li>
+                        <li>Copia y pega el script de abajo</li>
+                        <li>Presiona <strong>Enter</strong></li>
+                        <li>Los enlaces m3u8 se mostrarán en la consola y se copiarán automáticamente</li>
+                    </ol>
                 </div>
                 
-                <div class="button-group">
-                    <button class="btn-primary" onclick="extractLinks()">🔍 Buscar Enlaces M3U8</button>
-                    <button class="btn-secondary" onclick="clearResults()">🗑️ Limpiar</button>
-                    <button class="btn-success" onclick="downloadAll()" id="downloadBtn" style="display:none;">⬇️ Descargar Todos</button>
+                <div class="code-block">
+                    <button class="copy-code-btn" onclick="copyScript()">📋 Copiar Script</button>
+                    <pre id="consoleScript">(function() {
+    console.clear();
+    console.log('%c🎥 Buscando enlaces M3U8...', 'color: #667eea; font-size: 16px; font-weight: bold;');
+    
+    const links = new Set();
+    
+    // Método 1: Buscar en todos los elementos de la página
+    document.querySelectorAll('*').forEach(el => {
+        ['src', 'href', 'data-src', 'data-url'].forEach(attr => {
+            const val = el.getAttribute(attr);
+            if (val && val.includes('.m3u8')) {
+                links.add(val);
+            }
+        });
+    });
+    
+    // Método 2: Buscar en el HTML completo
+    const html = document.documentElement.innerHTML;
+    const m3u8Pattern = /https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>]*/gi;
+    const matches = html.match(m3u8Pattern);
+    if (matches) {
+        matches.forEach(link => links.add(link));
+    }
+    
+    // Método 3: Interceptar solicitudes fetch/XHR
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+        const url = args[0];
+        if (typeof url === 'string' && url.includes('.m3u8')) {
+            links.add(url);
+            console.log('%c✅ M3U8 detectado via Fetch:', 'color: #28a745; font-weight: bold;', url);
+        }
+        return originalFetch.apply(this, args);
+    };
+    
+    const originalOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url) {
+        if (url.includes('.m3u8')) {
+            links.add(url);
+            console.log('%c✅ M3U8 detectado via XHR:', 'color: #28a745; font-weight: bold;', url);
+        }
+        return originalOpen.apply(this, arguments);
+    };
+    
+    // Mostrar resultados
+    setTimeout(() => {
+        console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
+        console.log('%c📊 RESULTADOS:', 'color: #667eea; font-size: 14px; font-weight: bold;');
+        console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
+        
+        if (links.size > 0) {
+            console.log(`%c✅ Se encontraron ${links.size} enlace(s) M3U8:`, 'color: #28a745; font-weight: bold;');
+            links.forEach((link, index) => {
+                console.log(`%c${index + 1}.`, 'color: #667eea; font-weight: bold;', link);
+            });
+            
+            const allLinks = Array.from(links).join('\n');
+            navigator.clipboard.writeText(allLinks).then(() => {
+                console.log('%c📋 Enlaces copiados al portapapeles!', 'color: #28a745; font-weight: bold; font-size: 14px;');
+            });
+        } else {
+            console.log('%c⚠️ No se encontraron enlaces M3U8 todavía.', 'color: #ffc107; font-weight: bold;');
+            console.log('%c💡 Reproduce el video y espera unos segundos...', 'color: #17a2b8;');
+        }
+        
+        console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
+        console.log('%c🔄 El script seguirá monitoreando nuevas peticiones M3U8', 'color: #6c757d;');
+    }, 2000);
+})();</pre>
+                </div>
+                
+                <div class="info">
+                    <strong>💡 Consejo:</strong> Si no aparecen enlaces inmediatamente, reproduce el video y el script los capturará automáticamente cuando se carguen.
                 </div>
             </div>
             
-            <div id="statusMessage"></div>
-            
-            <div class="results-section" id="resultsSection" style="display:none;">
-                <div class="results-header">
-                    <h2>Resultados encontrados:</h2>
-                    <span class="count" id="resultCount">0 enlaces</span>
+            <!-- MÉTODO 2: Análisis de Página -->
+            <div id="method2" class="tab-content">
+                <div class="instructions">
+                    <h3>🔍 Análisis Directo de Página</h3>
+                    <p>Intenta extraer enlaces directamente desde una URL (limitado por CORS):</p>
                 </div>
-                <div class="results-list" id="resultsList"></div>
+                
+                <div class="input-section">
+                    <div class="input-group">
+                        <label for="urlInput">🔗 URL de la página embed:</label>
+                        <input 
+                            type="text" 
+                            id="urlInput" 
+                            placeholder="https://futbollibre.mx/embed/eventos.html?r=..."
+                            value="">
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="analyzeDirectly()">🔍 Analizar Página</button>
+                        <button class="btn-secondary" onclick="clearResults()">🗑️ Limpiar</button>
+                    </div>
+                </div>
+                
+                <div id="statusMessage2"></div>
+                
+                <div class="results-section" id="resultsSection2" style="display:none;">
+                    <div class="results-header">
+                        <h2>Resultados encontrados:</h2>
+                        <span class="count" id="resultCount2">0 enlaces</span>
+                    </div>
+                    <div class="results-list" id="resultsList2"></div>
+                    <button class="btn-success" onclick="downloadAll()" style="margin-top: 15px;">⬇️ Descargar Todos</button>
+                </div>
+            </div>
+            
+            <!-- MÉTODO 3: Entrada Manual -->
+            <div id="method3" class="tab-content">
+                <div class="instructions">
+                    <h3>📝 Entrada Manual de Enlaces</h3>
+                    <p>Si ya tienes enlaces m3u8, pégalos aquí para organizarlos:</p>
+                </div>
+                
+                <div class="input-section">
+                    <div class="input-group">
+                        <label for="manualInput">📋 Pega tus enlaces (uno por línea):</label>
+                        <textarea 
+                            id="manualInput" 
+                            placeholder="https://rm8zcvk3.fubohd.com/beinsportes/mono.m3u8?token=...
+https://otro-enlace.com/stream.m3u8
+..."></textarea>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="processManualLinks()">✅ Procesar Enlaces</button>
+                        <button class="btn-secondary" onclick="clearManual()">🗑️ Limpiar</button>
+                    </div>
+                </div>
+                
+                <div id="statusMessage3"></div>
+                
+                <div class="results-section" id="resultsSection3" style="display:none;">
+                    <div class="results-header">
+                        <h2>Enlaces procesados:</h2>
+                        <span class="count" id="resultCount3">0 enlaces</span>
+                    </div>
+                    <div class="results-list" id="resultsList3"></div>
+                    <button class="btn-success" onclick="downloadManual()" style="margin-top: 15px;">⬇️ Descargar Todos</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         let foundLinks = [];
+        let manualLinks = [];
+        let currentTab = 'method1';
 
-        async function extractLinks() {
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function copyScript() {
+            const script = document.getElementById('consoleScript').textContent;
+            navigator.clipboard.writeText(script).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copiado!';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#667eea';
+                }, 2000);
+            });
+        }
+
+        async function analyzeDirectly() {
             const url = document.getElementById('urlInput').value.trim();
-            const statusDiv = document.getElementById('statusMessage');
+            const statusDiv = document.getElementById('statusMessage2');
             
             if (!url) {
                 statusDiv.innerHTML = '<div class="error">⚠️ Por favor ingresa una URL válida</div>';
                 return;
             }
             
-            statusDiv.innerHTML = '<div class="loading">🔄 Buscando enlaces m3u8...</div>';
+            statusDiv.innerHTML = '<div class="loading">🔄 Analizando página...</div>';
             foundLinks = [];
             
             try {
-                const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+                const response = await fetch(url);
                 const html = await response.text();
                 
-                // Buscar enlaces m3u8 con diferentes patrones
                 const m3u8Patterns = [
-                    /https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>]*/gi,
+                    /https?:\/\/[^\s"'<>)]+\.m3u8[^\s"'<>)]*/gi,
                     /"(https?:\/\/[^"]+\.m3u8[^"]*)"/gi,
                     /'(https?:\/\/[^']+\.m3u8[^']*)'/gi,
                     /src["']?\s*[:=]\s*["']?(https?:\/\/[^"']+\.m3u8[^"']*)/gi,
-                    /url["']?\s*[:=]\s*["']?(https?:\/\/[^"']+\.m3u8[^"']*)/gi
+                    /url["']?\s*[:=]\s*["']?(https?:\/\/[^"']+\.m3u8[^"']*)/gi,
                 ];
                 
                 m3u8Patterns.forEach(pattern => {
                     const matches = html.matchAll(pattern);
                     for (const match of matches) {
-                        const link = match[1] || match[0];
-                        if (link && !foundLinks.includes(link)) {
-                            foundLinks.push(link.replace(/["']/g, ''));
+                        let link = match[1] || match[0];
+                        link = link.replace(/["'\\]/g, '').trim();
+                        if (link && link.startsWith('http') && !foundLinks.includes(link)) {
+                            foundLinks.push(link);
                         }
                     }
                 });
                 
-                // Eliminar duplicados
                 foundLinks = [...new Set(foundLinks)];
                 
                 if (foundLinks.length > 0) {
-                    displayResults();
+                    displayResults(foundLinks, 'resultsSection2', 'resultsList2', 'resultCount2');
                     statusDiv.innerHTML = `<div class="success">✅ Se encontraron ${foundLinks.length} enlace(s) m3u8</div>`;
                 } else {
-                    statusDiv.innerHTML = '<div class="error">❌ No se encontraron enlaces m3u8 en esta página. Los enlaces pueden estar cargándose dinámicamente con JavaScript.</div>';
-                    document.getElementById('resultsSection').style.display = 'none';
+                    statusDiv.innerHTML = '<div class="error">❌ No se encontraron enlaces m3u8 en el HTML estático.<br><br>💡 <strong>Recomendación:</strong> Usa el <strong>Método 1: Script de Consola</strong> para capturar enlaces que se cargan dinámicamente con JavaScript.</div>';
+                    document.getElementById('resultsSection2').style.display = 'none';
                 }
                 
             } catch (error) {
-                statusDiv.innerHTML = `<div class="error">❌ Error al procesar la página: ${error.message}<br><br>💡 Nota: Esta herramienta tiene limitaciones debido a CORS y JavaScript dinámico. Para mejores resultados, usa las herramientas de desarrollador de tu navegador (F12 → Network → filtra por "m3u8")</div>`;
-                console.error('Error:', error);
+                statusDiv.innerHTML = `<div class="error">❌ No se pudo acceder a la página debido a restricciones CORS.<br><br>💡 <strong>Solución:</strong> Usa el <strong>Método 1: Script de Consola</strong> que funciona directamente en la página.</div>`;
             }
         }
 
-        function displayResults() {
-            const resultsSection = document.getElementById('resultsSection');
-            const resultsList = document.getElementById('resultsList');
-            const resultCount = document.getElementById('resultCount');
-            const downloadBtn = document.getElementById('downloadBtn');
+        function processManualLinks() {
+            const input = document.getElementById('manualInput').value.trim();
+            const statusDiv = document.getElementById('statusMessage3');
+            
+            if (!input) {
+                statusDiv.innerHTML = '<div class="error">⚠️ Por favor ingresa al menos un enlace</div>';
+                return;
+            }
+            
+            const lines = input.split('\n').filter(line => line.trim());
+            manualLinks = [];
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.includes('.m3u8') && line.startsWith('http')) {
+                    manualLinks.push(line);
+                }
+            });
+            
+            if (manualLinks.length > 0) {
+                displayResults(manualLinks, 'resultsSection3', 'resultsList3', 'resultCount3');
+                statusDiv.innerHTML = `<div class="success">✅ Se procesaron ${manualLinks.length} enlace(s) válidos</div>`;
+            } else {
+                statusDiv.innerHTML = '<div class="error">❌ No se encontraron enlaces m3u8 válidos en el texto ingresado</div>';
+            }
+        }
+
+        function displayResults(links, sectionId, listId, countId) {
+            const resultsSection = document.getElementById(sectionId);
+            const resultsList = document.getElementById(listId);
+            const resultCount = document.getElementById(countId);
             
             resultsSection.style.display = 'block';
-            downloadBtn.style.display = 'block';
-            resultCount.textContent = `${foundLinks.length} enlace${foundLinks.length !== 1 ? 's' : ''}`;
+            resultCount.textContent = `${links.length} enlace${links.length !== 1 ? 's' : ''}`;
             
-            resultsList.innerHTML = foundLinks.map((link, index) => `
+            resultsList.innerHTML = links.map((link, index) => `
                 <div class="result-item">
                     <div class="result-url">${link}</div>
                     <div class="result-actions">
-                        <button class="btn-primary btn-small" onclick="copyLink('${link}')">📋 Copiar</button>
-                        <button class="btn-success btn-small" onclick="testLink('${link}')">▶️ Probar</button>
+                        <button class="btn-primary btn-small" onclick="copyLink('${link.replace(/'/g, "\\'")}')">📋 Copiar</button>
+                        <button class="btn-success btn-small" onclick="testLink('${link.replace(/'/g, "\\'")}')">▶️ Abrir</button>
                     </div>
                 </div>
             `).join('');
@@ -364,13 +636,7 @@
 
         function copyLink(link) {
             navigator.clipboard.writeText(link).then(() => {
-                const statusDiv = document.getElementById('statusMessage');
-                statusDiv.innerHTML = '<div class="success">✅ Enlace copiado al portapapeles</div>';
-                setTimeout(() => {
-                    if (statusDiv.innerHTML.includes('copiado')) {
-                        statusDiv.innerHTML = '';
-                    }
-                }, 3000);
+                alert('✅ Enlace copiado al portapapeles');
             });
         }
 
@@ -380,25 +646,39 @@
 
         function downloadAll() {
             const text = foundLinks.join('\n');
+            downloadFile(text, 'enlaces_m3u8.txt');
+        }
+
+        function downloadManual() {
+            const text = manualLinks.join('\n');
+            downloadFile(text, 'enlaces_m3u8.txt');
+        }
+
+        function downloadFile(text, filename) {
             const blob = new Blob([text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'enlaces_m3u8.txt';
+            a.download = filename;
             a.click();
             URL.revokeObjectURL(url);
-            
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.innerHTML = '<div class="success">✅ Archivo descargado con todos los enlaces</div>';
+            alert('✅ Archivo descargado');
         }
 
         function clearResults() {
             foundLinks = [];
-            document.getElementById('resultsList').innerHTML = '';
-            document.getElementById('resultsSection').style.display = 'none';
-            document.getElementById('downloadBtn').style.display = 'none';
-            document.getElementById('statusMessage').innerHTML = '';
-            document.getElementById('urlInput').value = 'https://futbollibre.mx/';
+            document.getElementById('urlInput').value = '';
+            document.getElementById('resultsList2').innerHTML = '';
+            document.getElementById('resultsSection2').style.display = 'none';
+            document.getElementById('statusMessage2').innerHTML = '';
+        }
+
+        function clearManual() {
+            manualLinks = [];
+            document.getElementById('manualInput').value = '';
+            document.getElementById('resultsList3').innerHTML = '';
+            document.getElementById('resultsSection3').style.display = 'none';
+            document.getElementById('statusMessage3').innerHTML = '';
         }
     </script>
 </body>
