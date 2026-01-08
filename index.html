@@ -1,25 +1,183 @@
-<ned-player player-auto-play="true" player-auto-init="false" player-only-audio="" player-name="live-stream" player-is-live="" class=""><adjacent-media-chrome-mux class="ned-player-child" player-name="live-stream" id="live-stream-1765219724010-internal">
-            
-<template id="ned-player-template-live">
-    <style>:host{height:100%;left:0;position:absolute;top:0;width:100%}.ned-player__ad-container{left:0;position:absolute;top:0;z-index:20}media-controller{position:absolute;z-index:10}media-controller media-time-display.show-breakpointsm,media-controller media-time-range,media-controller media-volume-range{display:none}media-controller .centered-chrome media-play-button{--media-button-icon-width:50px;--media-button-icon-height:50px;border-radius:100px;margin:0 20px}media-controller media-seek-backward-button,media-controller media-seek-forward-button{border-radius:100px;height:44px;width:44px}media-controller media-control-bar{--media-control-background:transparent;--media-control-height:20px;--media-control-hover-background:rgba(0,0,0,.2);background-color:rgba(0,0,0,.6);border-radius:10px 10px 0 0;justify-content:flex-end;margin:10px auto 0}media-controller[platform=youtube] media-control-bar{background-image:linear-gradient(180deg,#9e0000,transparent)}media-controller[media-audio] media-control-bar{justify-content:center;margin:0}media-controller[breakpointsm] media-control-bar{border-radius:10px;margin:10px}media-controller[breakpointsm] media-time-display.show-breakpointsm,media-controller[breakpointsm] media-time-range,media-controller[breakpointsm] media-volume-range{display:inline-flex}media-controller[breakpointsm] media-time-display.hide-breakpointsm{display:none}
-</style>
-    <div class="ned-player__ad-container"></div>
-    <media-controller>
-        <slot name="media" slot="media"></slot>
-        <media-rendition-menu hidden="" anchor="auto"></media-rendition-menu>
-        <div slot="centered-chrome" class="centered-chrome">
-            <media-play-button></media-play-button>
-        </div>
-        <media-control-bar>
-            <media-mute-button></media-mute-button>
-            <media-volume-range></media-volume-range>
-            <media-rendition-menu-button></media-rendition-menu-button>
-            <media-live-button></media-live-button>
-            <media-fullscreen-button></media-fullscreen-button>
-        </media-control-bar>
-    </media-controller>
-</template>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canales Deportivos | Streaming</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --secondary: #1e293b;
+      --accent: #22c55e;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
 
-<media-theme template="ned-player-template-live">
-    <mux-video src="https://d2qsan2ut81n2k.cloudfront.net/live/c2cce928-c69c-45d5-bd0a-5a5eba167a0d/ts:abr.m3u8" env-key="" slot="media" autoplay="" crossorigin="" preload="none" id="live-stream-1765219724010-internal-media" tabindex="-1"></mux-video>
-</media-theme></adjacent-media-chrome-mux></ned-player>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(180deg, var(--primary), #020617);
+      color: var(--text);
+    }
+
+    header {
+      background: var(--secondary);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+
+    nav a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .hero {
+      padding: 50px 32px;
+      text-align: center;
+    }
+
+    .hero h2 {
+      font-size: 2.3rem;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      color: var(--muted);
+    }
+
+    .section {
+      padding: 40px 32px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .section h3 {
+      font-size: 1.7rem;
+      margin-bottom: 20px;
+      border-left: 5px solid var(--accent);
+      padding-left: 12px;
+    }
+
+    .channels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .channel {
+      background: var(--secondary);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+
+    .channel h4 {
+      margin-bottom: 12px;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    iframe {
+      width: 100%;
+      height: 220px;
+      border-radius: 8px;
+      border: none;
+      background: #000;
+    }
+
+    footer {
+      background: #020617;
+      padding: 20px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Canales Deportivos</h1>
+  <nav>
+    <ul>
+      <li><a href="#">Inicio</a></li>
+      <li><a href="#liga">Liga Española</a></li>
+      <li><a href="#champions">Champions</a></li>
+      <li><a href="#otros">Otros</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="hero">
+  <h2>Streaming Deportivo en Vivo</h2>
+  <p>Selecciona tu liga y mira los canales disponibles</p>
+</section>
+
+<section class="section" id="liga">
+  <h3>LIGA ESPAÑOLA</h3>
+  <div class="channels">
+
+    <div class="channel">
+      <h4>Canal 1</h4>
+      <!-- Reemplaza src por tu reproductor -->
+      <iframe src="https://example.com/player1"></iframe>
+    </div>
+
+    <div class="channel">
+      <h4>Canal 2</h4>
+      <iframe src="https://example.com/player2"></iframe>
+    </div>
+
+  </div>
+</section>
+
+<section class="section" id="champions">
+  <h3>UEFA Champions League</h3>
+  <div class="channels">
+
+    <div class="channel">
+      <h4>Canal HD</h4>
+      <iframe src="https://example.com/player3"></iframe>
+    </div>
+
+  </div>
+</section>
+
+<section class="section" id="otros">
+  <h3>Otros Eventos</h3>
+  <div class="channels">
+
+    <div class="channel">
+      <h4>Deportes Varios</h4>
+      <iframe src="https://example.com/player4"></iframe>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  © 2026 | Plataforma de Canales Deportivos
+</footer>
+
+</body>
+</html>
