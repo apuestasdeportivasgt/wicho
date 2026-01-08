@@ -138,9 +138,21 @@
   <div class="channels">
 
     <div class="channel">
-      <h4>Canal 1</h4>
-      <!-- Reemplaza src por tu reproductor -->
-      <iframe src="https://example.com/player1"></iframe>
+      <h4>Al Nassr – Partido en Vivo</h4>
+
+      <video id="alnassrPlayer" controls autoplay width="100%" height="220" style="border-radius:8px;background:#000"></video>
+
+      <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+      <script>
+        if (Hls.isSupported()) {
+          const video = document.getElementById('alnassrPlayer');
+          const hls = new Hls();
+          hls.loadSource('https://buq4a.envivoslatam.org/sporttvbr1/tracks-v1a1/mono.m3u8?ip=181.174.104.54&token=3add67a0a52f39a417e147e9890f7c20ab3a47b1-e1-1767938268-1767884268');
+          hls.attachMedia(video);
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = 'https://buq4a.envivoslatam.org/sporttvbr1/tracks-v1a1/mono.m3u8?ip=181.174.104.54&token=3add67a0a52f39a417e147e9890f7c20ab3a47b1-e1-1767938268-1767884268';
+        }
+      </script>
     </div>
 
     <div class="channel">
@@ -168,8 +180,8 @@
   <div class="channels">
 
     <div class="channel">
-      <h4>Al-Nassr Vrs. Al-Qadisiya/h4>
-      <iframe src="https://buq4a.envivoslatam.org/sporttvbr1/tracks-v1a1/mono.m3u8?ip=181.174.104.54&token=3add67a0a52f39a417e147e9890f7c20ab3a47b1-e1-1767938268-1767884268"></iframe>
+      <h4>Deportes Varios</h4>
+      <iframe src="https://example.com/player4"></iframe>
     </div>
 
   </div>
@@ -181,4 +193,3 @@
 
 </body>
 </html>
-
