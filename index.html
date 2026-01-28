@@ -3,25 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pronósticos IA • Análisis Futurista</title>
+  <title>Pronósticos IA • Pro Dashboard</title>
   <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="bg-grid"></div> <!-- Fondo metálico con grid sutil -->
+  <div class="bg-grid"></div>
 
   <header class="header-metallic">
-    <div class="container">
+    <div class="container header-flex">
       <div class="logo">
         <span class="logo-glow">⚡</span>
         <h1>PRONÓSTICOS <span class="neon">IA</span></h1>
       </div>
       <nav>
         <ul>
-          <li><a href="#calendario" class="active">PARTIDOS</a></li>
-          <li><a href="#">LIGAS</a></li>
-          <li><a href="#">COMBINADAS</a></li>
-          <li><a href="#">ANÁLISIS IA</a></li>
+          <li><a href="#" class="active">PARTIDOS</a></li>
+          <li><a href="#">TOP PICKS</a></li>
         </ul>
       </nav>
     </div>
@@ -29,50 +27,47 @@
 
   <main class="container">
     <section class="hero-metallic">
-      <h2>ANÁLISIS PREDICTIVO AVANZADO</h2>
-      <p>Inteligencia Artificial + Estadísticas en Tiempo Real</p>
+      <h2>ANÁLISIS PREDICTIVO</h2>
       <div class="status-bar">
         <span class="status-pulse"></span>
-        Sistema Activo • Actualizado: <span id="last-update">Cargando...</span>
+        IA Online • <span id="last-update">Sincronizando...</span>
       </div>
     </section>
 
-    <section id="calendario" class="section-metallic">
-      <div class="section-header">
-        <h2>Encuentros Activos</h2>
-        <button id="refresh-btn" class="btn-metallic">Actualizar Datos</button>
-      </div>
+    <div class="filter-bar">
+        <button id="refresh-btn" class="btn-metallic">🔄 Actualizar</button>
+    </div>
 
+    <section id="calendario" class="section-metallic">
       <div id="loading" class="loading-metallic">
         <div class="spinner-metallic"></div>
-        <p>Procesando datos con IA...</p>
+        <p>Procesando algoritmos...</p>
       </div>
 
-      <div id="partidos-container" class="hidden match-grid"></div>
+      <div id="partidos-container" class="match-grid hidden"></div>
 
       <div id="no-data" class="hidden no-data-message">
-        <p>Sin encuentros con análisis disponible en este momento</p>
+        <p>No hay análisis disponibles para hoy.</p>
       </div>
     </section>
   </main>
 
-  <!-- Modal metálico -->
   <div id="modal" class="modal hidden">
     <div class="modal-content metallic-glass">
-      <button class="modal-close metallic-close">×</button>
-      <h2 id="modal-title" class="modal-title"></h2>
-      <div id="modal-date" class="modal-info"></div>
-      <div id="modal-stadium" class="modal-info"></div>
-      <div id="modal-pronostico" class="pronostico-detail"></div>
-      <div id="modal-formas" class="formas-metallic"></div>
+      <button class="modal-close metallic-close">&times;</button>
+      <div class="modal-body">
+          <h2 id="modal-title" class="modal-title"></h2>
+          <div class="modal-meta">
+              <span id="modal-date"></span> • <span id="modal-stadium"></span>
+          </div>
+          <div class="analysis-container">
+              <h3>Análisis del Algoritmo</h3>
+              <div id="modal-pronostico" class="pronostico-detail"></div>
+          </div>
+          <div id="modal-formas" class="formas-metallic"></div>
+      </div>
     </div>
   </div>
-
-  <footer class="footer-metallic">
-    <div class="container">
-      <p>PRONÓSTICOS IA • Tecnología Predictiva 2026 • Juega con responsabilidad</p>
-    </div>
-  </footer>
 
   <script src="script.js"></script>
 </body>
