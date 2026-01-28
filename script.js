@@ -1,104 +1,115 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxlXuDL9bOXY8ogCJvhck3keo5g1TZ56uWbVktOtXnQ9XfoMaT-BGNPavnX3TuSRM_AZw/exec";
+// 1. COLOCA TU URL DE GOOGLE AQUÍ
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxlXuDL9bOXY8ogCJvhck3keo5g1TZ56uWbVktOtXnQ9XfoMaT-BGNPavnX3TuSRM_AZw/exec";
+
 let allMatches = [];
 let currentPage = 0;
 const PAGE_SIZE = 4;
 
-async function init() {
-    try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-        
-        // Unificar todos los partidos de todas las ligas en un solo array
-        allMatches = [];
-        Object.keys(data.calendario).forEach(liga => {
-            data.calendario[liga].forEach(match => allMatches.push(match));
-        });
+// Función para normalizar nombres y comparar mejor
+const normalize = (name) => name ? name.trim().toLowerCase() : '';
 
-        renderPage();
-        document.getElementById('loading').style.display = 'none';
-    } catch (error) {
-        console.error("Error cargando datos", error);
-    }
+// 2. Función principal para cruzar Calendario con Logos
+function processData(data) {
+    const processed = [];
+    const ligas = data.ligas; // Donde están los equipos con logoUrl
+    const calendario = data.calendario; // Donde están los partidos
+
+    Object.keys(calendario).forEach(ligaKey => {
+        calendario[ligaKey].forEach(match => {
+            // Buscamos el logo en la sección "ligas" del JSON
+            const teamHome = ligas[ligaKey]?.find(t => normalize(t.name) === normalize(match["equipo local"]));
+            const teamAway = ligas[ligaKey]?.find(t => normalize(t.name) === normalize(match["equipo visitante"]));
+
+            processed.push({
+                ...match,
+                logoLocal: teamHome?.logoUrl || 'https://via.placeholder.com/50?text=?',
+                logoVisit: teamAway?.logoUrl || 'https://via.placeholder.com/50?text=?'
+            });
+        });
+    });
+    return processed;
 }
 
-function renderPage() {
-    const container = document.getElementById('grid-partidos');
+// 3. Renderizar las 4 fichas
+function renderGrid() {
+    const container = document.getElementById('grid-container');
     container.innerHTML = "";
     
     const start = currentPage * PAGE_SIZE;
     const end = start + PAGE_SIZE;
-    const currentMatches = allMatches.slice(start, end);
+    const items = allMatches.slice(start, end);
 
-    currentMatches.forEach(m => {
+    items.forEach(m => {
         const fecha = new Date(m.fecha);
-        const hora = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        // Extraer recomendación (primeras líneas del pronóstico)
-        const recCorta = m["pronóstico ia"].split('\n').find(l => l.includes('%')) || "Ver análisis";
+        const fechaStr = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+        const horaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
         const card = document.createElement('div');
-        card.className = 'card';
+        card.className = 'ficha-partido';
         card.innerHTML = `
-            <div class="card-top">
+            <div class="info-header">
                 <span>${m.liga.replace(/_/g, ' ')}</span>
-                <span>${hora}</span>
+                <span>${fechaStr} - ${horaStr}</span>
             </div>
-            <div class="match-vs">
-                <div class="team-box">
-                    <img src="https://logo.clearbit.com/${m["equipo local"].toLowerCase().replace(/ /g, '')}.com?size=100" onerror="this.src='https://ui-avatars.com/api/?name=${m["equipo local"]}'">
-                    <span class="team-name">${m["equipo local"]}</span>
+            <div class="equipos-container">
+                <div class="equipo-box">
+                    <img src="${m.logoLocal}" class="logo-equipo" alt="Logo">
+                    <span class="nombre-equipo">${m["equipo local"]}</span>
                 </div>
-                <div style="color: var(--primary); font-weight: bold;">VS</div>
-                <div class="team-box">
-                    <img src="https://logo.clearbit.com/${m["equipo visitante"].toLowerCase().replace(/ /g, '')}.com?size=100" onerror="this.src='https://ui-avatars.com/api/?name=${m["equipo visitante"]}'">
-                    <span class="team-name">${m["equipo visitante"]}</span>
+                <div class="vs-badge">VS</div>
+                <div class="equipo-box">
+                    <img src="${m.logoVisit}" class="logo-equipo" alt="Logo">
+                    <span class="nombre-equipo">${m["equipo visitante"]}</span>
                 </div>
             </div>
-            <div style="font-size: 0.7rem; text-align: center; color: #8b949e; margin-bottom: 10px;">🏟️ ${m.estadio}</div>
-            <div class="card-footer">${recCorta}</div>
+            <div class="estadio-footer">
+                🏟️ ${m.estadio}
+            </div>
         `;
-        
-        card.onclick = () => showModal(m);
+        card.onclick = () => openModal(m);
         container.appendChild(card);
     });
 
-    updatePagination();
-}
-
-function updatePagination() {
+    // Actualizar botones y contador
     const totalPages = Math.ceil(allMatches.length / PAGE_SIZE);
-    document.getElementById('page-indicator').innerText = `Página ${currentPage + 1} de ${totalPages}`;
     document.getElementById('prev-btn').disabled = currentPage === 0;
     document.getElementById('next-btn').disabled = (currentPage + 1) >= totalPages;
+    document.getElementById('page-indicator').innerText = `${currentPage + 1} / ${totalPages}`;
 }
 
-function showModal(m) {
-    const modal = document.getElementById('modal');
-    const content = document.getElementById('modal-data');
+// 4. Modal con el análisis de la IA
+function openModal(m) {
+    const modal = document.getElementById('modal-pronostico');
+    const body = document.getElementById('modal-body');
     
-    content.innerHTML = `
-        <h2 style="color: var(--primary); margin-bottom: 10px;">${m["equipo local"]} vs ${m["equipo visitante"]}</h2>
-        <p style="color: var(--subtext); margin-bottom: 20px;">${m.liga.replace(/_/g, ' ')} | ${m.estadio}</p>
-        <hr style="border: 0; border-top: 1px solid #30363d; margin-bottom: 20px;">
-        <div style="line-height: 1.6; font-size: 0.95rem;">
+    body.innerHTML = `
+        <h2 style="color:var(--primary); margin-top:0;">${m["equipo local"]} vs ${m["equipo visitante"]}</h2>
+        <p style="color:#8b949e; font-size:0.9rem; margin-bottom:20px;">${m.liga} | ${m.estadio}</p>
+        <div style="background:#0d1117; padding:20px; border-radius:12px; border:1px solid #30363d; line-height:1.7;">
             ${m["pronóstico ia"].replace(/\n/g, '<br>')}
-        </div>
-        <div style="margin-top: 25px; display: flex; gap: 10px;">
-            <div style="flex: 1; background: #21262d; padding: 15px; border-radius: 10px;">
-                <strong>Forma Local:</strong><br><span style="color: var(--primary)">${m["forma local"]}</span>
-            </div>
-            <div style="flex: 1; background: #21262d; padding: 15px; border-radius: 10px;">
-                <strong>Forma Visita:</strong><br><span style="color: var(--primary)">${m["forma visitante"]}</span>
-            </div>
         </div>
     `;
     modal.style.display = 'block';
 }
 
-// Eventos de botones
-document.getElementById('next-btn').onclick = () => { currentPage++; renderPage(); };
-document.getElementById('prev-btn').onclick = () => { currentPage--; renderPage(); };
-document.querySelector('.close-btn').onclick = () => document.getElementById('modal').style.display = 'none';
-window.onclick = (e) => { if(e.target == modal) modal.style.display = 'none'; };
+// 5. Carga inicial
+async function init() {
+    try {
+        const response = await fetch(`${WEBAPP_URL}?tipo=todo`);
+        const data = await response.json();
+        
+        allMatches = processData(data);
+        renderGrid();
+    } catch (error) {
+        console.error("Error cargando API:", error);
+        document.getElementById('grid-container').innerHTML = `<p style="color:red">Error al cargar datos. Verifica la URL de la API.</p>`;
+    }
+}
+
+// Navegación y Cierre
+document.getElementById('next-btn').onclick = () => { currentPage++; renderGrid(); };
+document.getElementById('prev-btn').onclick = () => { currentPage--; renderGrid(); };
+document.querySelector('.close-modal').onclick = () => document.getElementById('modal-pronostico').style.display = 'none';
+window.onclick = (e) => { if(e.target.className === 'modal-overlay') e.target.style.display = 'none'; };
 
 init();
