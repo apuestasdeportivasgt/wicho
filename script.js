@@ -1,100 +1,104 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxlXuDL9bOXY8ogCJvhck3keo5g1TZ56uWbVktOtXnQ9XfoMaT-BGNPavnX3TuSRM_AZw/exec";
-let todosLosPartidos = [];
-let currentIndex = 0;
-const ITEMS_PER_PAGE = 4;
+let allMatches = [];
+let currentPage = 0;
+const PAGE_SIZE = 4;
 
-async function fetchData() {
-    const loader = document.getElementById("loading");
+async function init() {
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
         
-        // Convertir el objeto de ligas en una lista plana de partidos
-        todosLosPartidos = [];
-        Object.entries(data.calendario).forEach(([liga, partidos]) => {
-            partidos.forEach(p => {
-                p.ligaNombre = liga.replace(/_/g, " ");
-                todosLosPartidos.push(p);
-            });
+        // Unificar todos los partidos de todas las ligas en un solo array
+        allMatches = [];
+        Object.keys(data.calendario).forEach(liga => {
+            data.calendario[liga].forEach(match => allMatches.push(match));
         });
 
-        renderGrid();
-        document.getElementById("last-update").textContent = "Actualizado: " + new Date().toLocaleTimeString();
-        loader.style.display = "none";
-    } catch (e) {
-        loader.textContent = "Error al conectar con la IA";
+        renderPage();
+        document.getElementById('loading').style.display = 'none';
+    } catch (error) {
+        console.error("Error cargando datos", error);
     }
 }
 
-function renderGrid() {
-    const container = document.getElementById("partidos-grid");
+function renderPage() {
+    const container = document.getElementById('grid-partidos');
     container.innerHTML = "";
     
-    // Obtener solo los 4 partidos actuales
-    const pageItems = todosLosPartidos.slice(currentIndex, currentIndex + ITEMS_PER_PAGE);
-    
-    pageItems.forEach(p => {
-        const div = document.createElement("div");
-        div.className = "card";
-        
-        // Extraer recomendación corta (ej: 75% Local)
-        const recCorta = p["pronóstico ia"]?.match(/(\d+%.*)/)?.[0] || "Ver detalle";
+    const start = currentPage * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const currentMatches = allMatches.slice(start, end);
 
-        div.innerHTML = `
-            <div class="card-header">${p.ligaNombre}</div>
-            <div class="teams">${p["equipo local"]} <br> vs <br> ${p["equipo visitante"]}</div>
-            <div class="recommendation">${recCorta.substring(0, 20)}</div>
+    currentMatches.forEach(m => {
+        const fecha = new Date(m.fecha);
+        const hora = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        // Extraer recomendación (primeras líneas del pronóstico)
+        const recCorta = m["pronóstico ia"].split('\n').find(l => l.includes('%')) || "Ver análisis";
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <div class="card-top">
+                <span>${m.liga.replace(/_/g, ' ')}</span>
+                <span>${hora}</span>
+            </div>
+            <div class="match-vs">
+                <div class="team-box">
+                    <img src="https://logo.clearbit.com/${m["equipo local"].toLowerCase().replace(/ /g, '')}.com?size=100" onerror="this.src='https://ui-avatars.com/api/?name=${m["equipo local"]}'">
+                    <span class="team-name">${m["equipo local"]}</span>
+                </div>
+                <div style="color: var(--primary); font-weight: bold;">VS</div>
+                <div class="team-box">
+                    <img src="https://logo.clearbit.com/${m["equipo visitante"].toLowerCase().replace(/ /g, '')}.com?size=100" onerror="this.src='https://ui-avatars.com/api/?name=${m["equipo visitante"]}'">
+                    <span class="team-name">${m["equipo visitante"]}</span>
+                </div>
+            </div>
+            <div style="font-size: 0.7rem; text-align: center; color: #8b949e; margin-bottom: 10px;">🏟️ ${m.estadio}</div>
+            <div class="card-footer">${recCorta}</div>
         `;
         
-        div.onclick = () => openModal(p);
-        container.appendChild(div);
+        card.onclick = () => showModal(m);
+        container.appendChild(card);
     });
 
-    updateControls();
+    updatePagination();
 }
 
-function updateControls() {
-    document.getElementById("prev-btn").disabled = currentIndex === 0;
-    document.getElementById("next-btn").disabled = currentIndex + ITEMS_PER_PAGE >= todosLosPartidos.length;
+function updatePagination() {
+    const totalPages = Math.ceil(allMatches.length / PAGE_SIZE);
+    document.getElementById('page-indicator').innerText = `Página ${currentPage + 1} de ${totalPages}`;
+    document.getElementById('prev-btn').disabled = currentPage === 0;
+    document.getElementById('next-btn').disabled = (currentPage + 1) >= totalPages;
+}
+
+function showModal(m) {
+    const modal = document.getElementById('modal');
+    const content = document.getElementById('modal-data');
     
-    const pageNum = Math.floor(currentIndex / ITEMS_PER_PAGE) + 1;
-    const totalPages = Math.ceil(todosLosPartidos.length / ITEMS_PER_PAGE);
-    document.getElementById("page-indicator").textContent = `${pageNum} / ${totalPages}`;
+    content.innerHTML = `
+        <h2 style="color: var(--primary); margin-bottom: 10px;">${m["equipo local"]} vs ${m["equipo visitante"]}</h2>
+        <p style="color: var(--subtext); margin-bottom: 20px;">${m.liga.replace(/_/g, ' ')} | ${m.estadio}</p>
+        <hr style="border: 0; border-top: 1px solid #30363d; margin-bottom: 20px;">
+        <div style="line-height: 1.6; font-size: 0.95rem;">
+            ${m["pronóstico ia"].replace(/\n/g, '<br>')}
+        </div>
+        <div style="margin-top: 25px; display: flex; gap: 10px;">
+            <div style="flex: 1; background: #21262d; padding: 15px; border-radius: 10px;">
+                <strong>Forma Local:</strong><br><span style="color: var(--primary)">${m["forma local"]}</span>
+            </div>
+            <div style="flex: 1; background: #21262d; padding: 15px; border-radius: 10px;">
+                <strong>Forma Visita:</strong><br><span style="color: var(--primary)">${m["forma visitante"]}</span>
+            </div>
+        </div>
+    `;
+    modal.style.display = 'block';
 }
 
-// Navegación
-document.getElementById("next-btn").onclick = () => {
-    if (currentIndex + ITEMS_PER_PAGE < todosLosPartidos.length) {
-        currentIndex += ITEMS_PER_PAGE;
-        renderGrid();
-    }
-};
+// Eventos de botones
+document.getElementById('next-btn').onclick = () => { currentPage++; renderPage(); };
+document.getElementById('prev-btn').onclick = () => { currentPage--; renderPage(); };
+document.querySelector('.close-btn').onclick = () => document.getElementById('modal').style.display = 'none';
+window.onclick = (e) => { if(e.target == modal) modal.style.display = 'none'; };
 
-document.getElementById("prev-btn").onclick = () => {
-    if (currentIndex > 0) {
-        currentIndex -= ITEMS_PER_PAGE;
-        renderGrid();
-    }
-};
-
-// Modal Funcional
-function openModal(p) {
-    const m = document.getElementById("modal");
-    document.getElementById("m-liga").textContent = p.ligaNombre;
-    document.getElementById("m-equipos").textContent = `${p["equipo local"]} vs ${p["equipo visitante"]}`;
-    document.getElementById("m-pronostico").innerHTML = p["pronóstico ia"].replace(/\n/g, "<br>");
-    document.getElementById("m-estadio").textContent = p.estadio || "N/A";
-    document.getElementById("m-fecha").textContent = new Date(p.fecha).toLocaleDateString();
-    
-    document.getElementById("m-forma-l").textContent = p["forma local"] || "?";
-    document.getElementById("m-forma-v").textContent = p["forma visitante"] || "?";
-
-    m.classList.add("active");
-}
-
-document.querySelector(".close-modal").onclick = () => {
-    document.getElementById("modal").classList.remove("active");
-};
-
-// Iniciar
-fetchData();
+init();
