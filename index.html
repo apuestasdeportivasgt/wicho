@@ -1,15 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Predictor Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
 <div class="app-container">
-    <div class="section-header">
-        <h2>Pronósticos Pro</h2>
-        <div class="nav-bar">
-            <button id="prev-btn" class="nav-btn">←</button>
+    <header class="main-header">
+        <div class="brand">PREDICT<span>IA</span></div>
+        <div class="nav-controls">
+            <button id="prev-btn" class="nav-btn" disabled>←</button>
             <span id="page-indicator">1 / 1</span>
             <button id="next-btn" class="nav-btn">→</button>
         </div>
-    </div>
+    </header>
 
     <div id="grid-container" class="grid-layout">
-        </div>
+        <div class="loader">Cargando pronósticos de la IA...</div>
+    </div>
 </div>
 
 <div id="modal-pronostico" class="modal-overlay">
@@ -18,3 +30,7 @@
         <div id="modal-body"></div>
     </div>
 </div>
+
+<script src="script.js"></script>
+</body>
+</html>
