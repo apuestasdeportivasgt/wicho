@@ -1,5 +1,4 @@
-// script.js
-const API_URL = "https://script.google.com/macros/s/AKfycbxlXuDL9bOXY8ogCJvhck3keo5g1TZ56uWbVktOtXnQ9XfoMaT-BGNPavnX3TuSRM_AZw/exec"; // ← CAMBIA ESTO
+const API_URL = "https://script.google.com/macros/s/AKfycbxlXuDL9bOXY8ogCJvhck3keo5g1TZ56uWbVktOtXnQ9XfoMaT-BGNPavnX3TuSRM_AZw/exec";
 
 async function cargarDatos() {
   const loading = document.getElementById("loading");
@@ -17,70 +16,100 @@ async function cargarDatos() {
     const data = await response.json();
 
     loading.classList.add("hidden");
-
-    // Limpiamos contenedor
     container.innerHTML = "";
-
-    // Filtro actual (por defecto todas)
-    const filtroLiga = document.getElementById("liga-filter")?.value || "all";
 
     let partidosMostrados = 0;
 
     Object.entries(data.calendario || {}).forEach(([liga, partidos]) => {
-      if (filtroLiga !== "all" && liga !== filtroLiga) return;
       if (partidos.length === 0) return;
-
-      const titulo = document.createElement("h3");
-      titulo.className = "liga-title";
-      titulo.textContent = liga.replace(/_/g, " ");
-      container.appendChild(titulo);
 
       partidos.forEach(p => {
         const card = document.createElement("div");
-        card.className = "card";
+        card.className = "match-card";
+        card.dataset.fullData = JSON.stringify(p); // guardamos todo el objeto para el modal
 
         const fecha = new Date(p.fecha);
-        const fechaStr = fecha.toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long' });
-        const horaStr = fecha.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const hora = fecha.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+        // Extraemos la recomendación principal (ej: la de mayor probabilidad en 1X2)
+        const pronosticoText = p["pronóstico ia"] || "";
+        const probMatch = pronosticoText.match(/(\d+)% para ([^(\n]*)/);
+        const recomendacion = probMatch ? `${probMatch[1]}% ${probMatch[2]}` : "Ver detalle";
 
         card.innerHTML = `
-          <div class="partido-header">
-            ${p["equipo local"]} <span style="color:#00ff88">vs</span> ${p["equipo visitante"]}
+          <div class="match-header">
+            <span>${p["equipo local"]}</span>
+            <span class="match-vs">vs</span>
+            <span>${p["equipo visitante"]}</span>
           </div>
-          <div class="partido-info">
-            <div>${fechaStr} • ${horaStr}</div>
-            <div>Estadio: ${p.estadio || "Por confirmar"}</div>
+          <div class="match-info">
+            <div>${hora}</div>
+            <div>${liga.replace(/_/g, " ")}</div>
           </div>
-          <div class="pronostico">
-            ${p["pronóstico ia"]?.replace(/\n/g, "<br>") || "Análisis en proceso..."}
-          </div>
-          <div class="formas">
-            Forma: <strong>${p["forma local"] || "?"}</strong> (L) • <strong>${p["forma visitante"] || "?"}</strong> (V)
-          </div>
+          <div class="match-prob">${recomendacion}</div>
         `;
+
+        // Abrir modal al clic
+        card.addEventListener("click", () => abrirModal(p));
 
         container.appendChild(card);
         partidosMostrados++;
       });
     });
 
-    container.classList.remove("hidden");
-
-    if (partidosMostrados === 0) {
+    if (partidosMostrados > 0) {
+      container.classList.remove("hidden");
+    } else {
       noData.classList.remove("hidden");
     }
 
   } catch (err) {
+    loading.innerHTML = `Error: ${err.message}<br>Revisa consola (F12)`;
     console.error(err);
-    loading.innerHTML = `Error: ${err.message}<br>Revisa consola (F12) o prueba la URL directamente.`;
   }
 }
 
-// Filtro y refresh
+function abrirModal(partido) {
+  const modal = document.getElementById("modal");
+  const title = document.getElementById("modal-title");
+  const dateEl = document.getElementById("modal-date");
+  const stadiumEl = document.getElementById("modal-stadium");
+  const pronosticoEl = document.getElementById("modal-pronostico");
+  const formasEl = document.getElementById("modal-formas");
+
+  title.textContent = `${partido["equipo local"]} vs ${partido["equipo visitante"]}`;
+
+  const fecha = new Date(partido.fecha);
+  dateEl.textContent = fecha.toLocaleString('es-GT', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: true
+  });
+
+  stadiumEl.textContent = `Estadio: ${partido.estadio || "Por confirmar"}`;
+
+  pronosticoEl.innerHTML = partido["pronóstico ia"]?.replace(/\n/g, "<br>") || "Sin análisis disponible";
+
+  formasEl.innerHTML = `
+    <strong>Forma reciente:</strong><br>
+    ${partido["forma local"] || "?"} (Local) • ${partido["forma visitante"] || "?"} (Visitante)
+  `;
+
+  modal.classList.remove("hidden");
+  modal.classList.add("active");
+
+  // Cerrar modal
+  const closeBtn = document.querySelector(".modal-close");
+  const closeModal = () => {
+    modal.classList.remove("active");
+    modal.classList.add("hidden");
+  };
+
+  closeBtn.onclick = closeModal;
+  modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+}
+
+// Eventos
 document.addEventListener("DOMContentLoaded", () => {
   cargarDatos();
-
   document.getElementById("refresh-btn")?.addEventListener("click", cargarDatos);
-
-  document.getElementById("liga-filter")?.addEventListener("change", cargarDatos);
 });
