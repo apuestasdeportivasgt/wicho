@@ -1,4 +1,4 @@
-const API_URL = "TU_URL_DE_GOOGLE_APPS_SCRIPT";
+const API_URL = "https://script.google.com/macros/s/AKfycbxlXuDL9bOXY8ogCJvhck3keo5g1TZ56uWbVktOtXnQ9XfoMaT-BGNPavnX3TuSRM_AZw/exec";
 let todosLosPartidos = [];
 let currentIndex = 0;
 const ITEMS_PER_PAGE = 4;
