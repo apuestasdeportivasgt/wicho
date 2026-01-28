@@ -1,107 +1,86 @@
-// script.js - Pronósticos IA Fútbol
-
-// ←←← CAMBIA ESTA URL por la tuya real (la que termina en /exec)
-const API_URL = "https://script.google.com/macros/s/AKfycbxlXuDL9bOXY8ogCJvhck3keo5g1TZ56uWbVktOtXnQ9XfoMaT-BGNPavnX3TuSRM_AZw/exec";  // ¡Pega aquí tu URL!
+// script.js
+const API_URL = "https://script.google.com/macros/s/AKfycbxlXuDL9bOXY8ogCJvhck3keo5g1TZ56uWbVktOtXnQ9XfoMaT-BGNPavnX3TuSRM_AZw/exec"; // ← CAMBIA ESTO
 
 async function cargarDatos() {
   const loading = document.getElementById("loading");
   const container = document.getElementById("partidos-container");
+  const noData = document.getElementById("no-data");
 
   try {
-    console.log("Iniciando fetch →", API_URL);
-    loading.innerHTML = "Conectando a la API... (puede tardar 10–40 segundos)";
+    loading.classList.remove("hidden");
+    container.classList.add("hidden");
+    noData.classList.add("hidden");
 
-    const response = await fetch(API_URL, {
-      method: 'GET',
-      redirect: 'follow',
-      mode: 'cors',
-      cache: 'no-store'
-    });
-
-    console.log("Respuesta recibida. Status:", response.status);
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP ${response.status} - ${response.statusText}`);
-    }
+    const response = await fetch(API_URL, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const data = await response.json();
-    console.log("Datos parseados OK. Ligas disponibles:", Object.keys(data.calendario || {}));
 
-    // Limpiamos loading y mostramos sección
     loading.classList.add("hidden");
-    document.getElementById("calendario").classList.remove("hidden");
 
-    // Por ahora mostramos SOLO UEFA Champions League para que cargue rápido
-    const ligaSeleccionada = "UEFA_Champions_League";
-    const partidos = data.calendario?.[ligaSeleccionada] || [];
+    // Limpiamos contenedor
+    container.innerHTML = "";
 
-    if (partidos.length === 0) {
-      container.innerHTML = `<p>No hay partidos próximos en ${ligaSeleccionada.replace(/_/g, ' ')} o la hoja está vacía.</p>`;
-      return;
-    }
+    // Filtro actual (por defecto todas)
+    const filtroLiga = document.getElementById("liga-filter")?.value || "all";
 
-    container.innerHTML = ""; // limpiamos
+    let partidosMostrados = 0;
 
-    // Título de la liga
-    const tituloLiga = document.createElement("h3");
-    tituloLiga.textContent = ligaSeleccionada.replace(/_/g, " ");
-    container.appendChild(tituloLiga);
+    Object.entries(data.calendario || {}).forEach(([liga, partidos]) => {
+      if (filtroLiga !== "all" && liga !== filtroLiga) return;
+      if (partidos.length === 0) return;
 
-    partidos.forEach(p => {
-      const card = document.createElement("div");
-      card.className = "card";
+      const titulo = document.createElement("h3");
+      titulo.className = "liga-title";
+      titulo.textContent = liga.replace(/_/g, " ");
+      container.appendChild(titulo);
 
-      // Formateamos fecha y hora en zona Guatemala
-      const fechaHora = new Date(p.fecha);
-      const fechaFormateada = fechaHora.toLocaleString('es-GT', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
+      partidos.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const fecha = new Date(p.fecha);
+        const fechaStr = fecha.toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long' });
+        const horaStr = fecha.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+        card.innerHTML = `
+          <div class="partido-header">
+            ${p["equipo local"]} <span style="color:#00ff88">vs</span> ${p["equipo visitante"]}
+          </div>
+          <div class="partido-info">
+            <div>${fechaStr} • ${horaStr}</div>
+            <div>Estadio: ${p.estadio || "Por confirmar"}</div>
+          </div>
+          <div class="pronostico">
+            ${p["pronóstico ia"]?.replace(/\n/g, "<br>") || "Análisis en proceso..."}
+          </div>
+          <div class="formas">
+            Forma: <strong>${p["forma local"] || "?"}</strong> (L) • <strong>${p["forma visitante"] || "?"}</strong> (V)
+          </div>
+        `;
+
+        container.appendChild(card);
+        partidosMostrados++;
       });
-
-      card.innerHTML = `
-        <div class="partido-header">
-          <strong>${p["equipo local"]} vs ${p["equipo visitante"]}</strong>
-        </div>
-        <div class="partido-info">
-          <span>${fechaFormateada}</span>
-          <span>Estadio: ${p.estadio || "Por confirmar"}</span>
-        </div>
-        <div class="pronostico">
-          ${p["pronóstico ia"] 
-            ? p["pronóstico ia"].replace(/\n/g, "<br>") 
-            : "Pronóstico no disponible aún"}
-        </div>
-        <div class="formas">
-          Forma: 
-          <strong>${p["forma local"] || "?"}</strong> (Local) • 
-          <strong>${p["forma visitante"] || "?"}</strong> (Visitante)
-        </div>
-      `;
-
-      container.appendChild(card);
     });
 
-  } catch (error) {
-    console.error("Error completo:", error);
-    loading.innerHTML = `
-      <strong>⚠️ Error al cargar los datos</strong><br><br>
-      ${error.message}<br><br>
-      <small>Revisa la consola (F12 → Console) y prueba abrir la URL de la API directamente en otra pestaña.<br>
-      Posibles causas:<br>
-      • La web app no está desplegada como "Cualquiera"<br>
-      • El script tarda demasiado (>30s)<br>
-      • Problema de red o CORS</small>
-    `;
+    container.classList.remove("hidden");
+
+    if (partidosMostrados === 0) {
+      noData.classList.remove("hidden");
+    }
+
+  } catch (err) {
+    console.error(err);
+    loading.innerHTML = `Error: ${err.message}<br>Revisa consola (F12) o prueba la URL directamente.`;
   }
 }
 
-// Cargar al abrir la página
-window.addEventListener("load", () => {
-  console.log("Página cargada → ejecutando cargarDatos()");
+// Filtro y refresh
+document.addEventListener("DOMContentLoaded", () => {
   cargarDatos();
+
+  document.getElementById("refresh-btn")?.addEventListener("click", cargarDatos);
+
+  document.getElementById("liga-filter")?.addEventListener("change", cargarDatos);
 });
