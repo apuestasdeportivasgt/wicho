@@ -1,78 +1,71 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background: #0a0c12;
-  color: #d0d0e0;
-  overflow-x: hidden;
+:root {
+    --primary: #14ff8c;
+    --bg: #0d1117;
+    --card-bg: #161b22;
+    --text: #c9d1d9;
+    --accent: #58a6ff;
 }
 
-.bg-grid {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(rgba(10, 12, 18, 0.95), rgba(10, 12, 18, 0.95)),
-              repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(20, 255, 140, 0.02) 20px, rgba(20, 255, 140, 0.02) 40px);
-  z-index: -1;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+    background-color: var(--bg); 
+    color: var(--text); 
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
 }
 
-.container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+.app-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-/* Header & Nav */
-.header-metallic {
-  background: rgba(26, 31, 46, 0.8);
-  backdrop-filter: blur(10px);
-  padding: 1rem 0;
-  border-bottom: 1px solid #2a3a55;
-  position: sticky; top: 0; z-index: 100;
-}
-.header-flex { display: flex; justify-content: space-between; align-items: center; }
-.logo { display: flex; align-items: center; gap: 0.5rem; }
-.logo h1 { font-family: 'Orbitron'; font-size: 1.5rem; letter-spacing: 2px; }
-.neon { color: #14ff8c; text-shadow: 0 0 10px #14ff8c; }
+header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 30px; border-bottom: 1px solid #30363d; }
+.logo { font-family: 'Orbitron'; font-size: 1.5rem; font-weight: bold; color: var(--text); }
+.logo span { color: var(--primary); }
 
-/* Hero */
-.hero-metallic { text-align: center; padding: 3rem 0; }
-.hero-metallic h2 { font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 1rem; }
-.status-bar { display: inline-flex; align-items: center; gap: 10px; background: rgba(20, 255, 140, 0.1); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid #14ff8c33; color: #14ff8c; font-size: 0.8rem; }
-.status-pulse { width: 8px; height: 8px; background: #14ff8c; border-radius: 50%; animation: pulse 1.5s infinite; }
+.section-title { display: flex; justify-content: space-between; align-items: center; margin: 25px 0; }
+.nav-controls { display: flex; align-items: center; gap: 15px; }
+.nav-btn { background: var(--card-bg); border: 1px solid var(--primary); color: var(--primary); padding: 5px 15px; cursor: pointer; border-radius: 4px; transition: 0.3s; }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-/* Grid de Partidos */
-.match-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-.match-card {
-  background: #161b22;
-  border: 1px solid #2a3a55;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: 0.3s;
-  position: relative;
-  overflow: hidden;
-}
-.match-card:hover { transform: translateY(-5px); border-color: #14ff8c; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
-/* Indicador de Alta Confianza */
-.high-confidence { border: 1px solid #14ff8c; }
-.high-confidence::after {
-    content: "TOP PICK";
-    position: absolute; top: 0; right: 0;
-    background: #14ff8c; color: #000;
-    font-size: 0.6rem; font-weight: bold; padding: 2px 8px;
-    border-bottom-left-radius: 8px;
+/* Grid de 4 fichas */
+.cards-container { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+    gap: 20px; 
+    min-height: 350px;
 }
 
-.match-header { padding: 1.5rem; text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #2a3a55; }
-.match-vs { color: #14ff8c; margin: 0 10px; }
-.match-info { padding: 1rem; text-align: center; font-size: 0.85rem; opacity: 0.7; }
-.match-prob { padding: 1rem; background: rgba(20, 255, 140, 0.05); text-align: center; color: #14ff8c; font-weight: bold; font-size: 1.2rem; }
+.card {
+    background: var(--card-bg);
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+}
+.card:hover { transform: translateY(-5px); border-color: var(--primary); }
+.card-header { font-size: 0.8rem; color: var(--accent); margin-bottom: 10px; text-transform: uppercase; }
+.teams { font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; }
+.recommendation { background: rgba(20, 255, 140, 0.1); color: var(--primary); padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; }
 
-/* Modal */
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
-.modal.active { opacity: 1; pointer-events: all; }
-.metallic-glass { background: #1a1f2e; width: 90%; max-width: 600px; border-radius: 15px; border: 1px solid #3a4a65; padding: 2rem; position: relative; }
-.metallic-close { position: absolute; top: 10px; right: 15px; background: none; border: none; color: white; font-size: 2rem; cursor: pointer; }
+/* Modal Estilo Pro */
+.modal-overlay { 
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
+    display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal-content { 
+    background: var(--card-bg); width: 100%; max-width: 800px; 
+    border-radius: 16px; position: relative; padding: 30px; 
+    border: 1px solid #30363d; animation: slideIn 0.3s ease;
+}
 
-/* Animaciones */
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-.hidden { display: none !important; }
+.modal-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-top: 20px; }
 
-/* Responsive */
-@media (max-width: 600px) { .match-grid { grid-template-columns: 1fr; } }
+@keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Responsive móvil */
+@media (max-width: 768px) {
+    .modal-grid { grid-template-columns: 1fr; }
+    .cards-container { grid-template-columns: 1fr; }
+    .nav-controls span { font-size: 0.8rem; }
+}
