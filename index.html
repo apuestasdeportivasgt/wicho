@@ -4,11 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pronósticos IA • Fútbol Hoy</title>
-  <meta name="description" content="Pronósticos precisos con IA para partidos de fútbol - Champions League, ligas top y más."/>
   <link rel="stylesheet" href="styles.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <header>
@@ -22,7 +19,6 @@
           <li><a href="#calendario" class="active">Partidos Hoy</a></li>
           <li><a href="#">Ligas</a></li>
           <li><a href="#">Combinadas</a></li>
-          <li><a href="#">Sobre IA</a></li>
         </ul>
       </nav>
     </div>
@@ -31,43 +27,43 @@
   <main class="container">
     <section class="hero">
       <h2>Pronósticos Inteligentes con IA</h2>
-      <p>Análisis estadístico avanzado • Probabilidades reales • Recomendaciones para hoy</p>
-      <div class="live-indicator">
-        <span class="pulse"></span> Actualizado en tiempo real
-      </div>
+      <p>Análisis estadístico • Recomendaciones para hoy</p>
     </section>
 
     <section id="calendario">
       <div class="section-header">
-        <h2>Partidos y Pronósticos</h2>
-        <div class="filters">
-          <select id="liga-filter">
-            <option value="all">Todas las ligas</option>
-            <option value="UEFA_Champions_League">UEFA Champions League</option>
-            <!-- Puedes agregar más dinámicamente después -->
-          </select>
-          <button id="refresh-btn">Actualizar</button>
-        </div>
+        <h2>Partidos de Hoy</h2>
+        <button id="refresh-btn">Actualizar</button>
       </div>
 
       <div id="loading" class="loading">
         <div class="spinner"></div>
-        <p>Cargando pronósticos con IA...</p>
-        <small>(puede tardar 10-40 segundos la primera vez)</small>
+        <p>Cargando pronósticos...</p>
       </div>
 
-      <div id="partidos-container" class="hidden grid"></div>
+      <div id="partidos-container" class="hidden match-grid"></div>
 
       <div id="no-data" class="hidden no-data-message">
-        <p>No hay partidos próximos con pronóstico disponible en este momento.</p>
+        <p>No hay partidos con pronóstico disponible ahora.</p>
       </div>
     </section>
   </main>
 
+  <!-- MODAL para detalle del partido -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close">×</button>
+      <h2 id="modal-title"></h2>
+      <div id="modal-date"></div>
+      <div id="modal-stadium"></div>
+      <div id="modal-pronostico" class="pronostico-detail"></div>
+      <div id="modal-formas"></div>
+    </div>
+  </div>
+
   <footer>
     <div class="container">
-      <p>© 2026 Pronósticos IA • Hecho con análisis estadístico y Gemini</p>
-      <p>No es asesoría financiera • Juega responsablemente</p>
+      <p>© 2026 Pronósticos IA • Análisis con IA • Juega responsablemente</p>
     </div>
   </footer>
 
